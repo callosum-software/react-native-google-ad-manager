@@ -1,0 +1,3 @@
+{
+  "extends": ["@callosum/eslint-config-callosum"]
+}
