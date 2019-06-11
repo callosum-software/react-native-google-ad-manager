@@ -13,8 +13,8 @@ const BANNER_TEST = '/6499/example/banner' // returns only 320x50
 
 const styles = StyleSheet.create({
   adBanner: {
-    height: 300,
-    width: 300,
+    height: 50,
+    width: 320,
     backgroundColor: 'darkorange',
   },
   container: { flex: 1 },
@@ -124,7 +124,7 @@ const FlatListWithBanner = () => (
 )
 
 export const Root = () => {
-  const [isFlatListFocused, setIsFlatListFocused] = useState(true)
+  const [isFlatListFocused, setIsFlatListFocused] = useState(false)
 
   return (
     <SafeAreaView style={styles.container}>
