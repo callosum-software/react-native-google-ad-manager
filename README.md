@@ -1,5 +1,6 @@
 
 # react-native-google-ad-manager
+This library integrates Banners for Google Ad Manager. To create issues and PRs please refer to the main repository [here](https://gitlab.com/cmsw/react-native-google-ad-manager).
 
 ## Getting started
 
