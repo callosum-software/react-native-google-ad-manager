@@ -47,7 +47,25 @@ class BannerView extends ReactViewGroup {
 
     public BannerView (final Context context) {
         super(context);
+    }
+
+    protected void destroyAdView(){
+        if (this.adView != null) {
+            this.adView.destroy();
+            this.removeView(this.adView);
+        }
+    }
+
+    private void createAdView(){
+        this.destroyAdView();
+
+        final Context context = getContext();
         this.adView = new PublisherAdView(context);
+
+        this.adView.setAdUnitId(adId);
+        this.adView.setAdSizes(adSize);
+
+        this.addView(this.adView);
     }
 
     private String getFailedToLoadReason(int code){
@@ -109,7 +127,7 @@ class BannerView extends ReactViewGroup {
         });
     }
 
-    public void loadAd(){
+    private void loadAd(){
         PublisherAdRequest.Builder adRequestBuilder = new PublisherAdRequest.Builder();
 
         for(String testId : testDeviceIds){
@@ -124,8 +142,8 @@ class BannerView extends ReactViewGroup {
 
     protected void loadAdIfPropsSet(){
         if(this.adId != null && this.adSize != null && testDeviceIds != null){
+            this.createAdView();
             this.setListeners();
-            this.addView(this.adView);
             this.loadAd();
         }
     }
@@ -133,6 +151,9 @@ class BannerView extends ReactViewGroup {
 
 public class BannerViewManager extends ViewGroupManager<BannerView> {
     private static final String REACT_CLASS = "RNGAMBannerView";
+
+    public static final int COMMAND_LOAD_BANNER = 1;
+    public static final int COMMAND_DESTROY_BANNER = 2;
 
     @Override
     public String getName() {
@@ -166,7 +187,6 @@ public class BannerViewManager extends ViewGroupManager<BannerView> {
     @ReactProp(name = "adId")
     public void setAdId(BannerView view, @Nullable String adId) {
         view.adId = adId;
-        view.adView.setAdUnitId(adId);
         view.loadAdIfPropsSet();
     }
 
@@ -174,7 +194,6 @@ public class BannerViewManager extends ViewGroupManager<BannerView> {
     public void setSize(BannerView view, @Nullable String size) {
         AdSize adSize = view.getGAMAdSizeFromString(size);
         view.adSize = adSize;
-        view.adView.setAdSizes(adSize);
         view.loadAdIfPropsSet();
     }
 
@@ -189,5 +208,24 @@ public class BannerViewManager extends ViewGroupManager<BannerView> {
 
         view.testDeviceIds = list;
         view.loadAdIfPropsSet();
+    }
+
+    @Nullable
+    @Override
+    public Map<String, Integer> getCommandsMap() {
+        return MapBuilder.of("loadBanner", COMMAND_LOAD_BANNER, "destroyBanner", COMMAND_DESTROY_BANNER);
+    }
+
+    @Override
+    public void receiveCommand(BannerView view, int commandId, @Nullable ReadableArray args) {
+        switch (commandId) {
+            case COMMAND_LOAD_BANNER:
+                view.loadAdIfPropsSet();
+                break;
+
+            case COMMAND_DESTROY_BANNER:
+                view.destroyAdView();
+                break;
+        }
     }
 }

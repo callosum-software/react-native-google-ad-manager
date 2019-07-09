@@ -2,7 +2,9 @@ import P from 'prop-types'
 import React from 'react'
 import {
   NativeModules,
+  findNodeHandle,
   requireNativeComponent,
+  UIManager,
   ViewPropTypes,
 } from 'react-native'
 
@@ -28,8 +30,33 @@ class RNGAMBanner extends React.PureComponent {
 
   state = { testDeviceIds: undefined, validAdSize: undefined }
 
+  destroyBanner = () => {
+    if (this._ref) {
+      UIManager.dispatchViewManagerCommand(
+        findNodeHandle(this._ref),
+        UIManager.getViewManagerConfig('RNGAMBannerView').Commands
+          .destroyBanner,
+        []
+      )
+    }
+  }
+
+  loadBanner = () => {
+    if (this._ref) {
+      UIManager.dispatchViewManagerCommand(
+        findNodeHandle(this._ref),
+        UIManager.getViewManagerConfig('RNGAMBannerView').Commands.loadBanner,
+        []
+      )
+    }
+  }
+
   _onAdFailedToLoad = ({ nativeEvent }) => {
     this.props.onAdFailedToLoad(nativeEvent.errorMessage)
+  }
+
+  _setRef = ref => {
+    this._ref = ref
   }
 
   render() {
@@ -41,6 +68,7 @@ class RNGAMBanner extends React.PureComponent {
         adId={adId}
         onAdLoaded={onAdLoaded}
         onAdFailedToLoad={this._onAdFailedToLoad}
+        ref={this._setRef}
         size={validAdSize}
         style={style}
         testDeviceIds={testDeviceIds}
