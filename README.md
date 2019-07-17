@@ -53,7 +53,7 @@ $(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME)
 ```diff
 target 'MyApp' do
     ...
-+   pod 'Google-Mobile-Ads-SDK'
++   pod 'Google-Mobile-Ads-SDK', '~> 7.43.0'
 end
 ```
 - Activate as Ad Manager app by editing your Info.plist
