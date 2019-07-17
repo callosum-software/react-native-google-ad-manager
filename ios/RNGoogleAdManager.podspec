@@ -16,7 +16,7 @@ Pod::Spec.new do |s|
 
 
   s.dependency "React"
-  s.dependency "Google-Mobile-Ads-SDK"
+  s.dependency "Google-Mobile-Ads-SDK", "~> 7.43.0"
 
 end
 

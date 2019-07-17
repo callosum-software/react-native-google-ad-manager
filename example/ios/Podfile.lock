@@ -30,7 +30,7 @@ PODS:
   - nanopb/encode (0.3.901)
 
 DEPENDENCIES:
-  - Google-Mobile-Ads-SDK
+  - Google-Mobile-Ads-SDK (~> 7.43.0)
 
 SPEC REPOS:
   https://github.com/cocoapods/specs.git:
@@ -45,6 +45,6 @@ SPEC CHECKSUMS:
   GoogleUtilities: 04fce34bcd5620c1ee76fb79172105c74a4df335
   nanopb: 2901f78ea1b7b4015c860c2fdd1ea2fee1a18d48
 
-PODFILE CHECKSUM: 0eb486ff16f275d5f14f67dec348eabe19e65f80
+PODFILE CHECKSUM: f2aeeafd734c6a61a3fe1edb31b82dd48bd54948
 
 COCOAPODS: 1.7.0
