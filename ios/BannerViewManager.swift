@@ -17,4 +17,18 @@ class BannerViewManager: RCTViewManager {
             "simulatorTestId": kGADSimulatorID
         ]
     }
+    
+    @objc func loadBanner(_ node: NSNumber) {
+        DispatchQueue.main.async {
+            let component = self.bridge.uiManager.view(forReactTag: node) as! BannerView
+            component.loadBanner()
+        }
+    }
+    
+    @objc func destroyBanner(_ node: NSNumber) {
+        DispatchQueue.main.async {
+            let component = self.bridge.uiManager.view(forReactTag: node) as! BannerView
+            component.destroyBanner()
+        }
+    }
 }

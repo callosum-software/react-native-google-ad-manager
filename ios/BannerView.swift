@@ -8,18 +8,13 @@ let supportedAdSizesMap: Dictionary = [
 
 class BannerView: UIView, GADBannerViewDelegate {
     let LOG_TAG = "RNGoogleAdManager"
-    var bannerView: DFPBannerView = DFPBannerView.init()
+    var bannerView: DFPBannerView? = nil
 
     @objc var onAdLoaded: RCTDirectEventBlock?
     @objc var onAdFailedToLoad: RCTDirectEventBlock?
     
-    func getGADAdSizeFromString(size: String) -> GADAdSize {
-        return supportedAdSizesMap[size]!
-    }
-    
     @objc var adId: String? = nil {
         didSet {
-            bannerView.adUnitID = adId
             loadAdIfPropsSet()
         }
     }
@@ -27,8 +22,6 @@ class BannerView: UIView, GADBannerViewDelegate {
     @objc var size: String? = nil {
         didSet {
             if(size != nil){
-                let adSize: GADAdSize = getGADAdSizeFromString(size: size!)
-                bannerView.adSize = adSize
                 loadAdIfPropsSet()
             }
         }
@@ -40,30 +33,62 @@ class BannerView: UIView, GADBannerViewDelegate {
         }
     }
     
-    func createBannerView(){
-        let rootViewController = UIApplication.shared.delegate?.window??.rootViewController
+    @objc func loadBanner(){
+        loadAdIfPropsSet()
+    }
+    
+    @objc func destroyBanner(){
+        destroyAdView()
+    }
+    
+    func destroyAdView(){
+        bannerView?.removeFromSuperview()
+        self.removeReactSubview(bannerView)
+    }
+
+    func getGADAdSizeFromString(size: String) -> GADAdSize {
+        return supportedAdSizesMap[size]!
+    }
+    
+    func createAdView(){
+        if(bannerView != nil){
+            destroyAdView()
+        }
         
-        bannerView.rootViewController = rootViewController
-        bannerView.delegate = self
-        bannerView.translatesAutoresizingMaskIntoConstraints = false
-        self.addSubview(bannerView)
+        bannerView = DFPBannerView.init()
+        
+        let rootViewController = UIApplication.shared.delegate?.window??.rootViewController
+        let adSize: GADAdSize = getGADAdSizeFromString(size: size!)
+        
+        bannerView?.rootViewController = rootViewController
+        bannerView?.delegate = self
+        bannerView?.translatesAutoresizingMaskIntoConstraints = false
+        
+        bannerView?.adUnitID = adId
+        bannerView?.adSize = adSize
+
+        self.addSubview(bannerView!)
     }
 
     override init(frame: CGRect) {
         super.init(frame: frame)
-        createBannerView()
     }
     
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
+    func loadAd(){
+        let adRequest = DFPRequest()
+        adRequest.testDevices = testDeviceIds
+        
+        bannerView?.load(adRequest)
+    }
+    
     func loadAdIfPropsSet(){
         if(size != nil && adId != nil && testDeviceIds != nil){
-            let adRequest = DFPRequest()
-            adRequest.testDevices = testDeviceIds
-
-            bannerView.load(adRequest)
+            createAdView()
+            loadAd()
         }
     }
     

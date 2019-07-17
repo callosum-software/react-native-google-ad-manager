@@ -23,4 +23,7 @@ RCT_EXPORT_VIEW_PROPERTY(testDeviceIds, NSArray<NSString>)
 RCT_EXPORT_VIEW_PROPERTY(onAdLoaded, RCTDirectEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onAdFailedToLoad, RCTDirectEventBlock)
 
+RCT_EXTERN_METHOD(loadBanner:(nonnull NSNumber *)node)
+RCT_EXTERN_METHOD(destroyBanner:(nonnull NSNumber *)node)
+
 @end
