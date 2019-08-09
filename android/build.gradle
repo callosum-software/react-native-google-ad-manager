@@ -35,5 +35,6 @@ repositories {
 dependencies {
     implementation('com.facebook.react:react-native:+')
     implementation('com.google.android.gms:play-services-ads:17.2.0')
+    implementation('org.prebid:prebid-mobile-sdk:1.1.2')
 }
   

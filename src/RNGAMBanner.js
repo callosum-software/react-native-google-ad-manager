@@ -60,7 +60,7 @@ class RNGAMBanner extends React.PureComponent {
   }
 
   render() {
-    const { adId, onAdLoaded, style } = this.props
+    const { adId, onAdLoaded, prebidAdId, style, targeting } = this.props
     const { testDeviceIds, validAdSize } = this.state
 
     return (
@@ -68,10 +68,12 @@ class RNGAMBanner extends React.PureComponent {
         adId={adId}
         onAdLoaded={onAdLoaded}
         onAdFailedToLoad={this._onAdFailedToLoad}
+        prebidAdId={prebidAdId}
         ref={this._setRef}
         size={validAdSize}
         style={style}
         testDeviceIds={testDeviceIds}
+        targeting={targeting}
       />
     )
   }
@@ -81,16 +83,20 @@ RNGAMBanner.propTypes = {
   adId: P.string.isRequired,
   onAdFailedToLoad: P.func,
   onAdLoaded: P.func,
+  prebidAdId: P.string,
   size: P.oneOf(sizes).isRequired, // eslint-disable-line react/no-unused-prop-types
   style: ViewPropTypes.style,
   testDeviceIds: P.arrayOf(P.string), // eslint-disable-line react/no-unused-prop-types
+  targeting: P.object,
 }
 
 RNGAMBanner.defaultProps = {
   onAdFailedToLoad: noop,
   onAdLoaded: noop,
+  prebidAdId: '',
   style: {},
   testDeviceIds: [],
+  targeting: {},
 }
 
 const RNGAMBannerView = requireNativeComponent('RNGAMBannerView', RNGAMBanner)

@@ -8,6 +8,7 @@ import android.view.View;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReadableArray;
+import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.common.MapBuilder;
 import com.facebook.react.uimanager.ThemedReactContext;
@@ -19,6 +20,10 @@ import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.doubleclick.PublisherAdRequest;
 import com.google.android.gms.ads.doubleclick.PublisherAdView;
+
+import org.prebid.mobile.BannerAdUnit;
+import org.prebid.mobile.ResultCode;
+import org.prebid.mobile.OnCompleteListener;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -43,7 +48,9 @@ class BannerView extends ReactViewGroup {
     protected PublisherAdView adView;
     protected String adId = null;
     protected AdSize adSize = null;
+    protected String prebidAdId = null;
     protected ArrayList<String> testDeviceIds = null;
+    protected Map<String, String> targeting = null;
 
     public BannerView (final Context context) {
         super(context);
@@ -91,6 +98,7 @@ class BannerView extends ReactViewGroup {
         this.adView.setAdListener(new AdListener() {
             @Override
             public void onAdLoaded() {
+                super.onAdLoaded();
                 // Code to be executed when an ad finishes loading.
                 Log.d(LOG_TAG, "Ad loaded");
 
@@ -134,14 +142,41 @@ class BannerView extends ReactViewGroup {
             adRequestBuilder.addTestDevice(testId);
         }
 
-        Log.d(LOG_TAG, "Requesting Banner " + this.adView.getAdUnitId() + " with size " + this.adView.getAdSize());
+        for (Map.Entry<String, String> entry : targeting.entrySet()) {
+            String key = entry.getKey();
+            String value = entry.getValue();
 
-        PublisherAdRequest adRequest = adRequestBuilder.build();
-        this.adView.loadAd(adRequest);
+            adRequestBuilder.addCustomTargeting(key, value);
+        }
+
+        final PublisherAdRequest adRequest = adRequestBuilder.build();
+        final String adUnitId = this.adView.getAdUnitId();
+        final AdSize adSize = this.adView.getAdSize();
+
+        if(!"".equals(prebidAdId)){
+            // prebidAdId is set
+            final String prebidAdUnitId = this.prebidAdId;
+
+            BannerAdUnit bannerAdUnit = new BannerAdUnit(prebidAdUnitId, 300, 250);
+
+            Log.d(LOG_TAG, "Prebid request with adunit id " + prebidAdUnitId);
+
+            bannerAdUnit.fetchDemand(adRequest, new OnCompleteListener() {
+                @Override
+                public void onComplete(ResultCode resultCode) {
+                    Log.d(LOG_TAG, "Prebid response code: " + resultCode);
+                    Log.d(LOG_TAG, "GAM Banner request with adunit id " + adUnitId + " with size " + adSize);
+                    BannerView.this.adView.loadAd(adRequest);
+                }
+            });
+        } else {
+            Log.d(LOG_TAG, "GAM Banner request with adunit id " + adUnitId + " with size " + adSize);
+            this.adView.loadAd(adRequest);
+        }
     }
 
     protected void loadAdIfPropsSet(){
-        if(this.adId != null && this.adSize != null && testDeviceIds != null){
+        if(this.adId != null && this.prebidAdId != null && this.adSize != null && testDeviceIds != null && targeting != null){
             this.createAdView();
             this.setListeners();
             this.loadAd();
@@ -190,6 +225,12 @@ public class BannerViewManager extends ViewGroupManager<BannerView> {
         view.loadAdIfPropsSet();
     }
 
+    @ReactProp(name = "prebidAdId")
+    public void setPrebidAdId(BannerView view, @Nullable String prebidAdId) {
+        view.prebidAdId = prebidAdId;
+        view.loadAdIfPropsSet();
+    }
+
     @ReactProp(name = "size")
     public void setSize(BannerView view, @Nullable String size) {
         AdSize adSize = view.getGAMAdSizeFromString(size);
@@ -207,6 +248,19 @@ public class BannerViewManager extends ViewGroupManager<BannerView> {
         }
 
         view.testDeviceIds = list;
+        view.loadAdIfPropsSet();
+    }
+
+    @ReactProp(name = "targeting")
+    public void setTargeting(BannerView view, ReadableMap targeting) {
+        Map<String,String> map =new HashMap<String,String>();
+        for (Map.Entry<String, Object> entry : targeting.toHashMap().entrySet()) {
+            if(entry.getValue() instanceof String){
+                map.put(entry.getKey(), (String) entry.getValue());
+            }
+        }
+
+        view.targeting = map;
         view.loadAdIfPropsSet();
     }
 
