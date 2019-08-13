@@ -18,6 +18,7 @@
 
 RCT_EXPORT_VIEW_PROPERTY(adId, NSString)
 RCT_EXPORT_VIEW_PROPERTY(size, NSString)
+RCT_EXPORT_VIEW_PROPERTY(targeting, NSDictionary)
 RCT_EXPORT_VIEW_PROPERTY(testDeviceIds, NSArray<NSString>)
 
 RCT_EXPORT_VIEW_PROPERTY(onAdLoaded, RCTDirectEventBlock)

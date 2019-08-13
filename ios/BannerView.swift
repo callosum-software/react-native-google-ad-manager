@@ -27,6 +27,12 @@ class BannerView: UIView, GADBannerViewDelegate {
         }
     }
     
+    @objc var targeting: NSDictionary? = nil {
+        didSet {
+            loadAdIfPropsSet()
+        }
+    }
+    
     @objc var testDeviceIds: Array<String>? = nil {
         didSet {
             loadAdIfPropsSet()
@@ -80,13 +86,22 @@ class BannerView: UIView, GADBannerViewDelegate {
     
     func loadAd(){
         let adRequest = DFPRequest()
+        var dict: [AnyHashable: Any] = [:]
+        
+        for key in targeting!.allKeys {
+            if key is String {
+                dict[key as! String] = RCTConvert.nsString(targeting?[key])
+            }
+        }
+        
+        adRequest.customTargeting = dict
         adRequest.testDevices = testDeviceIds
         
         bannerView?.load(adRequest)
     }
     
     func loadAdIfPropsSet(){
-        if(size != nil && adId != nil && testDeviceIds != nil){
+        if(size != nil && adId != nil && targeting != nil && testDeviceIds != nil){
             createAdView()
             loadAd()
         }
