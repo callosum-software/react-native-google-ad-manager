@@ -35,19 +35,23 @@ class BannerView extends ReactViewGroup {
 
     public static final String BANNER = "BANNER";
     public static final String MEDIUM_RECTANGLE = "MEDIUM_RECTANGLE";
+    public static final String UNDERSTITIAL = "UNDERSTITIAL";
+    public static final String UNDERSTITIAL_LARGE = "UNDERSTITIAL_LARGE";
 
     public static final Map<String, AdSize> supportedAdSizesMap;
     static {
         Map<String, AdSize> map = new HashMap<String, AdSize>();
         map.put(BANNER, AdSize.BANNER);
         map.put(MEDIUM_RECTANGLE, AdSize.MEDIUM_RECTANGLE);
+        map.put(UNDERSTITIAL, new AdSize(320, 480));
+        map.put(UNDERSTITIAL_LARGE, new AdSize(300, 600));
 
         supportedAdSizesMap = Collections.unmodifiableMap(map);
     }
 
     protected PublisherAdView adView;
     protected String adId = null;
-    protected AdSize adSize = null;
+    protected ArrayList<AdSize> adSizes = null;
     protected String prebidAdId = null;
     protected ArrayList<String> testDeviceIds = null;
     protected Map<String, String> targeting = null;
@@ -70,7 +74,9 @@ class BannerView extends ReactViewGroup {
         this.adView = new PublisherAdView(context);
 
         this.adView.setAdUnitId(adId);
-        this.adView.setAdSizes(adSize);
+
+        AdSize []arr = adSizes.toArray(new AdSize[0]);
+        this.adView.setAdSizes(arr);
 
         this.addView(this.adView);
     }
@@ -99,23 +105,30 @@ class BannerView extends ReactViewGroup {
             @Override
             public void onAdLoaded() {
                 super.onAdLoaded();
-                // Code to be executed when an ad finishes loading.
                 Log.d(LOG_TAG, "Ad loaded");
 
                 final Context context = getContext();
 
-                int width = adView.getAdSize().getWidthInPixels(context);
-                int height = adView.getAdSize().getHeightInPixels(context);
+                AdSize size = adView.getAdSize();
+
+                int widthInPixel = size.getWidthInPixels(context);
+                int width = size.getWidth();
+                int heightInPixel = size.getHeightInPixels(context);
+                int height = size.getHeight();
                 int left = adView.getLeft();
                 int top = adView.getTop();
                 adView.measure(width, height);
-                adView.layout(left, top, left + width, top + height);
+                adView.layout(left, top, left + widthInPixel, top + heightInPixel);
+
+                WritableMap event = Arguments.createMap();
+                event.putInt("width", width);
+                event.putInt("height", height);
 
                 ReactContext reactContext = (ReactContext)getContext();
                 reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(
                         getId(),
                         "adLoaded",
-                        null);
+                        event);
             }
 
             @Override
@@ -176,7 +189,7 @@ class BannerView extends ReactViewGroup {
     }
 
     protected void loadAdIfPropsSet(){
-        if(this.adId != null && this.prebidAdId != null && this.adSize != null && testDeviceIds != null && targeting != null){
+        if(adId != null && prebidAdId != null && adSizes != null && testDeviceIds != null && targeting != null){
             this.createAdView();
             this.setListeners();
             this.loadAd();
@@ -232,9 +245,16 @@ public class BannerViewManager extends ViewGroupManager<BannerView> {
     }
 
     @ReactProp(name = "size")
-    public void setSize(BannerView view, @Nullable String size) {
-        AdSize adSize = view.getGAMAdSizeFromString(size);
-        view.adSize = adSize;
+    public void setSize(BannerView view, @Nullable ReadableArray adSizes) {
+        ArrayList<AdSize> list = new ArrayList<>();
+
+        for(int i = 0; i < adSizes.size(); i++){
+            String size = adSizes.getString(i);
+            AdSize adSize = view.getGAMAdSizeFromString(size);
+            list.add(adSize);
+        }
+
+        view.adSizes = list;
         view.loadAdIfPropsSet();
     }
 

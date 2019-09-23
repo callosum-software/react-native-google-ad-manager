@@ -19,16 +19,18 @@ class RNGAMBanner extends React.PureComponent {
   static simulatorTestId = simulatorTestId
   static getDerivedStateFromProps(props, state) {
     const { testDeviceIds, size } = props
-    const isSizeValid = sizes.includes(size)
 
-    if (isSizeValid) {
-      return { ...state, testDeviceIds, validAdSize: size }
+    const adSizes = Array.isArray(size) ? size : [size]
+    const areSizesValid = adSizes.every(size => sizes.includes(size))
+
+    if (areSizesValid) {
+      return { ...state, adSizes, testDeviceIds }
     }
 
     return { ...state, testDeviceIds }
   }
 
-  state = { testDeviceIds: undefined, validAdSize: undefined }
+  state = { adSizes: undefined, testDeviceIds: undefined }
 
   destroyBanner = () => {
     if (this._ref) {
@@ -61,7 +63,7 @@ class RNGAMBanner extends React.PureComponent {
 
   render() {
     const { adId, onAdLoaded, prebidAdId, style, targeting } = this.props
-    const { testDeviceIds, validAdSize } = this.state
+    const { adSizes, testDeviceIds } = this.state
 
     return (
       <RNGAMBannerView
@@ -70,7 +72,7 @@ class RNGAMBanner extends React.PureComponent {
         onAdFailedToLoad={this._onAdFailedToLoad}
         prebidAdId={prebidAdId}
         ref={this._setRef}
-        size={validAdSize}
+        size={adSizes}
         style={style}
         testDeviceIds={testDeviceIds}
         targeting={targeting}
