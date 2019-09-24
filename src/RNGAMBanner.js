@@ -55,9 +55,9 @@ class RNGAMBanner extends React.PureComponent {
   render() {
     const {
       adId,
+      adSizes,
       onAdLoaded,
       prebidAdId,
-      size,
       style,
       targeting,
       testDeviceIds,
@@ -66,13 +66,13 @@ class RNGAMBanner extends React.PureComponent {
     return (
       <RNGAMBannerView
         adId={adId}
+        adSizes={adSizes}
         onAdClicked={this._onAdClicked}
         onAdClosed={this._onAdClosed}
         onAdLoaded={onAdLoaded}
         onAdFailedToLoad={this._onAdFailedToLoad}
         prebidAdId={prebidAdId}
         ref={this._setRef}
-        size={size}
         style={style}
         testDeviceIds={testDeviceIds}
         targeting={targeting}
@@ -83,12 +83,12 @@ class RNGAMBanner extends React.PureComponent {
 
 RNGAMBanner.propTypes = {
   adId: P.string.isRequired,
+  adSizes: P.arrayOf(P.arrayOf(P.number)).isRequired,
   onAdFailedToLoad: P.func,
   onAdLoaded: P.func,
   onAdClicked: P.func,
   onAdClosed: P.func,
   prebidAdId: P.string,
-  size: P.arrayOf(P.arrayOf(P.number)).isRequired,
   style: ViewPropTypes.style,
   testDeviceIds: P.arrayOf(P.string),
   targeting: P.object,

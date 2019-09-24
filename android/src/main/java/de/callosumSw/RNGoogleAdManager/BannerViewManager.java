@@ -274,13 +274,7 @@ public class BannerViewManager extends ViewGroupManager<BannerView> {
         view.loadAdIfPropsSet();
     }
 
-    @ReactProp(name = "prebidAdId")
-    public void setPrebidAdId(BannerView view, @Nullable String prebidAdId) {
-        view.prebidAdId = prebidAdId;
-        view.loadAdIfPropsSet();
-    }
-
-    @ReactProp(name = "size")
+    @ReactProp(name = "adSizes")
     public void setSize(BannerView view, @Nullable ReadableArray adSizes) {
         ArrayList<AdSize> list = new ArrayList<>();
 
@@ -293,6 +287,12 @@ public class BannerViewManager extends ViewGroupManager<BannerView> {
         }
 
         view.adSizes = list;
+        view.loadAdIfPropsSet();
+    }
+
+    @ReactProp(name = "prebidAdId")
+    public void setPrebidAdId(BannerView view, @Nullable String prebidAdId) {
+        view.prebidAdId = prebidAdId;
         view.loadAdIfPropsSet();
     }
 
