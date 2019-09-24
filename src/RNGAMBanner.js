@@ -53,6 +53,14 @@ class RNGAMBanner extends React.PureComponent {
     }
   }
 
+  _onAdClicked = e => {
+    this.props.onAdClicked(e)
+  }
+
+  _onAdClosed = e => {
+    this.props.onAdClosed(e)
+  }
+
   _onAdFailedToLoad = ({ nativeEvent }) => {
     this.props.onAdFailedToLoad(nativeEvent.errorMessage)
   }
@@ -68,6 +76,8 @@ class RNGAMBanner extends React.PureComponent {
     return (
       <RNGAMBannerView
         adId={adId}
+        onAdClicked={this._onAdClicked}
+        onAdClosed={this._onAdClosed}
         onAdLoaded={onAdLoaded}
         onAdFailedToLoad={this._onAdFailedToLoad}
         prebidAdId={prebidAdId}
@@ -85,6 +95,8 @@ RNGAMBanner.propTypes = {
   adId: P.string.isRequired,
   onAdFailedToLoad: P.func,
   onAdLoaded: P.func,
+  onAdClicked: P.func,
+  onAdClosed: P.func,
   prebidAdId: P.string,
   size: P.oneOf(sizes).isRequired, // eslint-disable-line react/no-unused-prop-types
   style: ViewPropTypes.style,
@@ -93,6 +105,8 @@ RNGAMBanner.propTypes = {
 }
 
 RNGAMBanner.defaultProps = {
+  onAdClicked: noop,
+  onAdClosed: noop,
   onAdFailedToLoad: noop,
   onAdLoaded: noop,
   prebidAdId: '',

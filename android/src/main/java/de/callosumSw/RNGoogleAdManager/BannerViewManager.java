@@ -1,5 +1,6 @@
 package de.callosumSw.RNGoogleAdManager;
 
+import android.app.Activity;
 import android.content.Context;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -18,6 +19,7 @@ import com.facebook.react.uimanager.events.RCTEventEmitter;
 import com.facebook.react.views.view.ReactViewGroup;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.doubleclick.AppEventListener;
 import com.google.android.gms.ads.doubleclick.PublisherAdRequest;
 import com.google.android.gms.ads.doubleclick.PublisherAdView;
 
@@ -31,7 +33,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 class BannerView extends ReactViewGroup {
-    private final String LOG_TAG = "RNGoogleAdManager";
+    public static final String LOG_TAG = "RNGoogleAdManager";
+
+    public static final String AD_CLICKED = "AD_CLICKED";
+    public static final String AD_CLOSED = "AD_CLOSED";
+    public static final String AD_FAILED = "AD_FAILED";
+    public static final String AD_LOADED = "AD_LOADED";
 
     public static final String BANNER = "BANNER";
     public static final String MEDIUM_RECTANGLE = "MEDIUM_RECTANGLE";
@@ -100,7 +107,43 @@ class BannerView extends ReactViewGroup {
         return supportedAdSizesMap.get(size);
     }
 
+    public class BannerAppEventListener extends Activity implements AppEventListener {
+        @Override
+        public void onAppEvent(String name, String info) {
+            switch (name) {
+                case AD_CLICKED: {
+                    Log.d(LOG_TAG, "Ad clicked");
+
+                    WritableMap event = Arguments.createMap();
+                    event.putString("url", info);
+
+                    ReactContext reactContext = (ReactContext)getContext();
+                    reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(
+                            getId(),
+                            AD_CLICKED,
+                            event);
+                    break;
+                }
+
+                case AD_CLOSED: {
+                    Log.d(LOG_TAG, "Ad closed");
+
+                    ReactContext reactContext = (ReactContext)getContext();
+                    reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(
+                            getId(),
+                            AD_CLOSED,
+                            null);
+
+                    destroyAdView();
+
+                    break;
+                }
+            }
+        }
+    }
+
     protected void setListeners(){
+        this.adView.setAppEventListener(new BannerAppEventListener());
         this.adView.setAdListener(new AdListener() {
             @Override
             public void onAdLoaded() {
@@ -127,7 +170,7 @@ class BannerView extends ReactViewGroup {
                 ReactContext reactContext = (ReactContext)getContext();
                 reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(
                         getId(),
-                        "adLoaded",
+                        AD_LOADED,
                         event);
             }
 
@@ -142,7 +185,7 @@ class BannerView extends ReactViewGroup {
                 ReactContext reactContext = (ReactContext)getContext();
                 reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(
                         getId(),
-                        "adFailedToLoad",
+                        AD_FAILED,
                         event);
             }
         });
@@ -221,14 +264,22 @@ public class BannerViewManager extends ViewGroupManager<BannerView> {
     @Override
     public Map getExportedCustomBubblingEventTypeConstants() {
         return MapBuilder.builder()
-                .put("adLoaded",
+                .put(BannerView.AD_LOADED,
                         MapBuilder.of(
                                 "phasedRegistrationNames",
                                 MapBuilder.of("bubbled", "onAdLoaded")))
-                .put("adFailedToLoad",
+                .put(BannerView.AD_FAILED,
                         MapBuilder.of(
                                 "phasedRegistrationNames",
                                 MapBuilder.of("bubbled", "onAdFailedToLoad")))
+                .put(BannerView.AD_CLICKED,
+                        MapBuilder.of(
+                                "phasedRegistrationNames",
+                                MapBuilder.of("bubbled", "onAdClicked")))
+                .put(BannerView.AD_CLOSED,
+                        MapBuilder.of(
+                                "phasedRegistrationNames",
+                                MapBuilder.of("bubbled", "onAdClosed")))
                 .build();
     }
 
