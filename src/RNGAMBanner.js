@@ -36,16 +36,20 @@ class RNGAMBanner extends React.PureComponent {
     }
   }
 
-  _onAdClicked = e => {
-    this.props.onAdClicked(e)
+  _onAdClicked = ({ nativeEvent }) => {
+    this.props.onAdClicked(nativeEvent)
   }
 
-  _onAdClosed = e => {
-    this.props.onAdClosed(e)
+  _onAdClosed = ({ nativeEvent }) => {
+    this.props.onAdClosed(nativeEvent)
   }
 
   _onAdFailedToLoad = ({ nativeEvent }) => {
-    this.props.onAdFailedToLoad(nativeEvent.errorMessage)
+    this.props.onAdFailedToLoad(nativeEvent)
+  }
+
+  _onAdLoaded = ({ nativeEvent }) => {
+    this.props.onAdLoaded(nativeEvent)
   }
 
   _setRef = ref => {
@@ -69,13 +73,13 @@ class RNGAMBanner extends React.PureComponent {
         adSizes={adSizes}
         onAdClicked={this._onAdClicked}
         onAdClosed={this._onAdClosed}
-        onAdLoaded={onAdLoaded}
         onAdFailedToLoad={this._onAdFailedToLoad}
+        onAdLoaded={onAdLoaded}
         prebidAdId={prebidAdId}
         ref={this._setRef}
         style={style}
-        testDeviceIds={testDeviceIds}
         targeting={targeting}
+        testDeviceIds={testDeviceIds}
       />
     )
   }
@@ -84,14 +88,14 @@ class RNGAMBanner extends React.PureComponent {
 RNGAMBanner.propTypes = {
   adId: P.string.isRequired,
   adSizes: P.arrayOf(P.arrayOf(P.number)).isRequired,
-  onAdFailedToLoad: P.func,
-  onAdLoaded: P.func,
   onAdClicked: P.func,
   onAdClosed: P.func,
+  onAdFailedToLoad: P.func,
+  onAdLoaded: P.func,
   prebidAdId: P.string,
   style: ViewPropTypes.style,
-  testDeviceIds: P.arrayOf(P.string),
   targeting: P.object,
+  testDeviceIds: P.arrayOf(P.string),
 }
 
 RNGAMBanner.defaultProps = {
@@ -101,8 +105,8 @@ RNGAMBanner.defaultProps = {
   onAdLoaded: noop,
   prebidAdId: '',
   style: {},
-  testDeviceIds: [],
   targeting: {},
+  testDeviceIds: [],
 }
 
 const RNGAMBannerView = requireNativeComponent('RNGAMBannerView', RNGAMBanner)
