@@ -40,11 +40,6 @@ class BannerView extends ReactViewGroup {
     public static final String AD_FAILED = "AD_FAILED";
     public static final String AD_LOADED = "AD_LOADED";
 
-    public static final String BANNER = "BANNER";
-    public static final String MEDIUM_RECTANGLE = "MEDIUM_RECTANGLE";
-    public static final String UNDERSTITIAL = "UNDERSTITIAL";
-    public static final String UNDERSTITIAL_LARGE = "UNDERSTITIAL_LARGE";
-
     protected PublisherAdView adView;
     protected String adId = null;
     protected ArrayList<AdSize> adSizes = null;
@@ -107,6 +102,7 @@ class BannerView extends ReactViewGroup {
                             getId(),
                             AD_CLICKED,
                             event);
+
                     break;
                 }
 
