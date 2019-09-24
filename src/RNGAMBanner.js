@@ -60,7 +60,6 @@ class RNGAMBanner extends React.PureComponent {
     const {
       adId,
       adSizes,
-      onAdLoaded,
       prebidAdId,
       style,
       targeting,
@@ -74,7 +73,7 @@ class RNGAMBanner extends React.PureComponent {
         onAdClicked={this._onAdClicked}
         onAdClosed={this._onAdClosed}
         onAdFailedToLoad={this._onAdFailedToLoad}
-        onAdLoaded={onAdLoaded}
+        onAdLoaded={this._onAdLoaded}
         prebidAdId={prebidAdId}
         ref={this._setRef}
         style={style}
