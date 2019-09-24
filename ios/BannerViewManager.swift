@@ -13,7 +13,6 @@ class BannerViewManager: RCTViewManager {
     
     override func constantsToExport() -> [AnyHashable : Any]! {
         return [
-            "sizes": Array(supportedAdSizesMap.keys),
             "simulatorTestId": kGADSimulatorID
         ]
     }

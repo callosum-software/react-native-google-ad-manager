@@ -17,10 +17,12 @@
 @interface RCT_EXTERN_REMAP_MODULE(RNGAMBannerView, BannerViewManager, RCTViewManager)
 
 RCT_EXPORT_VIEW_PROPERTY(adId, NSString)
-RCT_EXPORT_VIEW_PROPERTY(size, NSString)
+RCT_EXPORT_VIEW_PROPERTY(adSizes, NSArray<NSArray>)
 RCT_EXPORT_VIEW_PROPERTY(targeting, NSDictionary)
 RCT_EXPORT_VIEW_PROPERTY(testDeviceIds, NSArray<NSString>)
 
+RCT_EXPORT_VIEW_PROPERTY(onAdClicked, RCTDirectEventBlock)
+RCT_EXPORT_VIEW_PROPERTY(onAdClosed, RCTDirectEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onAdLoaded, RCTDirectEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onAdFailedToLoad, RCTDirectEventBlock)
 
