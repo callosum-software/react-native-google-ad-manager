@@ -45,17 +45,6 @@ class BannerView extends ReactViewGroup {
     public static final String UNDERSTITIAL = "UNDERSTITIAL";
     public static final String UNDERSTITIAL_LARGE = "UNDERSTITIAL_LARGE";
 
-    public static final Map<String, AdSize> supportedAdSizesMap;
-    static {
-        Map<String, AdSize> map = new HashMap<String, AdSize>();
-        map.put(BANNER, AdSize.BANNER);
-        map.put(MEDIUM_RECTANGLE, AdSize.MEDIUM_RECTANGLE);
-        map.put(UNDERSTITIAL, new AdSize(320, 480));
-        map.put(UNDERSTITIAL_LARGE, new AdSize(300, 600));
-
-        supportedAdSizesMap = Collections.unmodifiableMap(map);
-    }
-
     protected PublisherAdView adView;
     protected String adId = null;
     protected ArrayList<AdSize> adSizes = null;
@@ -101,10 +90,6 @@ class BannerView extends ReactViewGroup {
             default:
                 return "Could not get message. Unknown code: " + code;
         }
-    }
-
-    protected AdSize getGAMAdSizeFromString(String size){
-        return supportedAdSizesMap.get(size);
     }
 
     public class BannerAppEventListener extends Activity implements AppEventListener {
@@ -300,8 +285,10 @@ public class BannerViewManager extends ViewGroupManager<BannerView> {
         ArrayList<AdSize> list = new ArrayList<>();
 
         for(int i = 0; i < adSizes.size(); i++){
-            String size = adSizes.getString(i);
-            AdSize adSize = view.getGAMAdSizeFromString(size);
+            ReadableArray sizes = adSizes.getArray(i);
+            Integer width = sizes.getInt(0);
+            Integer height = sizes.getInt(1);
+            AdSize adSize = new AdSize(width, height);
             list.add(adSize);
         }
 

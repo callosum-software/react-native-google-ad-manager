@@ -41,9 +41,6 @@ public class RNGoogleAdManagerModule extends ReactContextBaseJavaModule {
     final Map<String, Object> constants = new HashMap<>();
     constants.put("simulatorTestId", PublisherAdRequest.DEVICE_ID_EMULATOR);
 
-    final List<String> sizes = new ArrayList<String>(BannerView.supportedAdSizesMap.keySet());
-    constants.put("sizes", sizes);
-
     final Map<String, String> prebidGender = new HashMap<String, String>();
     prebidGender.put("FEMAlE", FEMALE);
     prebidGender.put("MALE", MALE);

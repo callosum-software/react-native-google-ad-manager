@@ -10,27 +10,10 @@ import {
 
 const noop = () => {}
 
-const { simulatorTestId, sizes } = NativeModules.RNGoogleAdManager
-
-const mappedSizes = sizes.reduce((acc, curr) => ({ ...acc, [curr]: curr }), {})
+const { simulatorTestId } = NativeModules.RNGoogleAdManager
 
 class RNGAMBanner extends React.PureComponent {
-  static sizes = mappedSizes
   static simulatorTestId = simulatorTestId
-  static getDerivedStateFromProps(props, state) {
-    const { testDeviceIds, size } = props
-
-    const adSizes = Array.isArray(size) ? size : [size]
-    const areSizesValid = adSizes.every(size => sizes.includes(size))
-
-    if (areSizesValid) {
-      return { ...state, adSizes, testDeviceIds }
-    }
-
-    return { ...state, testDeviceIds }
-  }
-
-  state = { adSizes: undefined, testDeviceIds: undefined }
 
   destroyBanner = () => {
     if (this._ref) {
@@ -70,8 +53,15 @@ class RNGAMBanner extends React.PureComponent {
   }
 
   render() {
-    const { adId, onAdLoaded, prebidAdId, style, targeting } = this.props
-    const { adSizes, testDeviceIds } = this.state
+    const {
+      adId,
+      onAdLoaded,
+      prebidAdId,
+      size,
+      style,
+      targeting,
+      testDeviceIds,
+    } = this.props
 
     return (
       <RNGAMBannerView
@@ -82,7 +72,7 @@ class RNGAMBanner extends React.PureComponent {
         onAdFailedToLoad={this._onAdFailedToLoad}
         prebidAdId={prebidAdId}
         ref={this._setRef}
-        size={adSizes}
+        size={size}
         style={style}
         testDeviceIds={testDeviceIds}
         targeting={targeting}
@@ -98,9 +88,9 @@ RNGAMBanner.propTypes = {
   onAdClicked: P.func,
   onAdClosed: P.func,
   prebidAdId: P.string,
-  size: P.oneOf(sizes).isRequired, // eslint-disable-line react/no-unused-prop-types
+  size: P.arrayOf(P.arrayOf(P.number)).isRequired,
   style: ViewPropTypes.style,
-  testDeviceIds: P.arrayOf(P.string), // eslint-disable-line react/no-unused-prop-types
+  testDeviceIds: P.arrayOf(P.string),
   targeting: P.object,
 }
 
