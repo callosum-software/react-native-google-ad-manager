@@ -99,9 +99,7 @@ class BannerView: UIView, GADAppEventDelegate, GADBannerViewDelegate, GADAdSizeD
         var dict: [AnyHashable: Any] = [:]
         
         for key in targeting!.allKeys {
-            if key is String {
-                dict[key as! String] = RCTConvert.nsString(targeting?[key])
-            }
+            dict[key as! String] = targeting![key]
         }
         
         adRequest.customTargeting = dict

@@ -28,7 +28,6 @@ import org.prebid.mobile.ResultCode;
 import org.prebid.mobile.OnCompleteListener;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -45,7 +44,7 @@ class BannerView extends ReactViewGroup {
     protected ArrayList<AdSize> adSizes = null;
     protected String prebidAdId = null;
     protected ArrayList<String> testDeviceIds = null;
-    protected Map<String, String> targeting = null;
+    protected Map<String, Object> targeting = null;
 
     public BannerView (final Context context) {
         super(context);
@@ -179,9 +178,9 @@ class BannerView extends ReactViewGroup {
             adRequestBuilder.addTestDevice(testId);
         }
 
-        for (Map.Entry<String, String> entry : targeting.entrySet()) {
+        for (Map.Entry<String, Object> entry : targeting.entrySet()) {
             String key = entry.getKey();
-            String value = entry.getValue();
+            ArrayList value =  (ArrayList) entry.getValue();
 
             adRequestBuilder.addCustomTargeting(key, value);
         }
@@ -307,14 +306,7 @@ public class BannerViewManager extends ViewGroupManager<BannerView> {
 
     @ReactProp(name = "targeting")
     public void setTargeting(BannerView view, ReadableMap targeting) {
-        Map<String,String> map =new HashMap<String,String>();
-        for (Map.Entry<String, Object> entry : targeting.toHashMap().entrySet()) {
-            if(entry.getValue() instanceof String){
-                map.put(entry.getKey(), (String) entry.getValue());
-            }
-        }
-
-        view.targeting = map;
+        view.targeting = targeting.toHashMap();
         view.loadAdIfPropsSet();
     }
 
