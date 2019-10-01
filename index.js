@@ -10,6 +10,8 @@ const {
   setPrebidCustomServerHost = noop,
   setPrebidServerAccountId = noop,
   setPrebidShareGeoLocation = noop,
+  setPrebidUserAaid = noop,
+  setPrebidUserAgent = noop,
 } = NativeModules.RNGoogleAdManager
 
 export const Prebid = {
@@ -18,6 +20,8 @@ export const Prebid = {
   setCustomServerHost: setPrebidCustomServerHost,
   setAccountId: setPrebidServerAccountId,
   setShareGeoLocation: setPrebidShareGeoLocation,
+  setUserAaid: setPrebidUserAaid,
+  setUserAgent: setPrebidUserAgent,
 }
 
 export { RNGAMBanner }
