@@ -42,7 +42,7 @@ public class RNGoogleAdManagerModule extends ReactContextBaseJavaModule {
     constants.put("simulatorTestId", PublisherAdRequest.DEVICE_ID_EMULATOR);
 
     final Map<String, String> prebidGender = new HashMap<String, String>();
-    prebidGender.put("FEMAlE", FEMALE);
+    prebidGender.put("FEMALE", FEMALE);
     prebidGender.put("MALE", MALE);
 
     constants.put("PREBID_GENDER", prebidGender);
@@ -51,7 +51,7 @@ public class RNGoogleAdManagerModule extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
-  public void setPrebidApplicationContext(){
+  public void setPrebidApplicationContext() {
     Log.d(LOG_TAG, "setting Prebid application context");
 
     final Context context = this.reactContext;
@@ -60,7 +60,7 @@ public class RNGoogleAdManagerModule extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
-  public void setPrebidCustomServerHost(String url){
+  public void setPrebidCustomServerHost(String url) {
     Log.d(LOG_TAG, "setting Prebid custom server host to " + url);
 
     Host.CUSTOM.setHostUrl(url);
@@ -68,25 +68,47 @@ public class RNGoogleAdManagerModule extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
-  public void setPrebidServerAccountId(String accountId){
+  public void setPrebidServerAccountId(String accountId) {
     Log.d(LOG_TAG, "setting Prebid server account id to " + accountId);
 
     PrebidMobile.setPrebidServerAccountId(accountId);
   }
 
   @ReactMethod
-  public void setPrebidShareGeoLocation(Boolean shouldEnable){
+  public void setPrebidUserAaid(String aaid) {
+    Log.d(LOG_TAG, "setting Prebid user aaid to " + aaid);
+
+    PrebidMobile.setPrebidUserAaid(aaid);
+  }
+
+  @ReactMethod
+  public String getPrebidUserAaid() {
+    String aaid = PrebidMobile.getPrebidUserAaid();
+    Log.d(LOG_TAG, "getting Prebid user aaid " + aaid);
+
+    return aaid;
+  }
+
+  @ReactMethod
+  public void setPrebidUserAgent(String userAgent) {
+    Log.d(LOG_TAG, "setting Prebid user agent to " + userAgent);
+
+    PrebidMobile.setPrebidUserAgent(userAgent);
+  }
+
+  @ReactMethod
+  public void setPrebidShareGeoLocation(Boolean shouldEnable) {
     PrebidMobile.setShareGeoLocation(shouldEnable);
   }
 
   @ReactMethod
-  public void setPrebidYearOfBirth(Integer yearOfBirth){
+  public void setPrebidYearOfBirth(Integer yearOfBirth) {
     TargetingParams.setYearOfBirth(yearOfBirth);
   }
 
   @ReactMethod
-  public void setPrebidGender(String gender){
-    if(FEMALE.equals(gender) || MALE.equals(gender)){
+  public void setPrebidGender(String gender) {
+    if (FEMALE.equals(gender) || MALE.equals(gender)) {
       TargetingParams.GENDER genderEnum = TargetingParams.GENDER.valueOf(gender);
       TargetingParams.setGender(genderEnum);
     }
