@@ -102,8 +102,11 @@ public class RNGoogleAdManagerModule extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
-  public void setPrebidYearOfBirth(Integer yearOfBirth) {
-    TargetingParams.setYearOfBirth(yearOfBirth);
+  public void setPrebidYearOfBirth(int yearOfBirth) {
+    try {
+      TargetingParams.setYearOfBirth(yearOfBirth);
+    } catch (Exception e) {
+    }
   }
 
   @ReactMethod
