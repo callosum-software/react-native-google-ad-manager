@@ -108,13 +108,13 @@ class BannerView extends ReactViewGroup {
                 case AD_CLOSED: {
                     Log.d(LOG_TAG, "Ad closed");
 
+                    destroyAdView();
+
                     ReactContext reactContext = (ReactContext)getContext();
                     reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(
                             getId(),
                             AD_CLOSED,
                             null);
-
-                    destroyAdView();
 
                     break;
                 }
@@ -159,6 +159,8 @@ class BannerView extends ReactViewGroup {
                 String errorMessage = getFailedToLoadReason(errorCode);
                 // Code to be executed when an ad request fails.
                 Log.d(LOG_TAG, "Ad failed to load. Reason: " + errorMessage);
+
+                destroyAdView();
 
                 WritableMap event = Arguments.createMap();
                 event.putString("errorMessage", errorMessage);

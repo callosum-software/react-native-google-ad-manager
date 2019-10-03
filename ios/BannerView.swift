@@ -148,7 +148,8 @@ class BannerView: UIView, GADAppEventDelegate, GADBannerViewDelegate, GADAdSizeD
     }
     
     func adView(_ bannerView: GADBannerView, didFailToReceiveAdWithError error: GADRequestError) {
-        onAdFailedToLoad!(["errorMessage": error.localizedDescription])
         print("\(LOG_TAG): Ad failed to load. Reason: \(error.localizedDescription)")
+        destroyAdView()
+        onAdFailedToLoad!(["errorMessage": error.localizedDescription])
     }
 }
