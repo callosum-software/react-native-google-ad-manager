@@ -2,6 +2,7 @@ package de.callosumSw.RNGoogleAdManager;
 
 import android.app.Activity;
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.View;
@@ -26,9 +27,10 @@ import com.google.android.gms.ads.doubleclick.PublisherAdView;
 import org.prebid.mobile.BannerAdUnit;
 import org.prebid.mobile.ResultCode;
 import org.prebid.mobile.OnCompleteListener;
+import org.prebid.mobile.addendum.AdViewUtils;
+import org.prebid.mobile.addendum.PbFindSizeError;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
 
 class BannerView extends ReactViewGroup {
@@ -126,6 +128,42 @@ class BannerView extends ReactViewGroup {
         }
     }
 
+    protected void sendLoadEvent(int width, int height) {
+        WritableMap event = Arguments.createMap();
+        event.putInt("width", width);
+        event.putInt("height", height);
+
+        ReactContext reactContext = (ReactContext)getContext();
+        reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(
+                getId(),
+                AD_LOADED,
+                event);
+    }
+
+    protected void handleLoad(String adServer) {
+        try {
+            Log.d(LOG_TAG, "Ad loaded. Server: " + adServer);
+
+            final Context context = getContext();
+
+            AdSize size = adView.getAdSize();
+
+            int widthInPixel = size.getWidthInPixels(context);
+            int width = size.getWidth();
+            int heightInPixel = size.getHeightInPixels(context);
+            int height = size.getHeight();
+            int left = adView.getLeft();
+            int top = adView.getTop();
+
+            adView.measure(width, height);
+            adView.layout(left, top, left + widthInPixel, top + heightInPixel);
+
+            sendLoadEvent(width, height);
+        } catch (Exception e) {
+
+        }
+    }
+
     protected void setListeners(){
         this.adView.setAppEventListener(new BannerAppEventListener());
         this.adView.setAdListener(new AdListener() {
@@ -134,30 +172,22 @@ class BannerView extends ReactViewGroup {
                 super.onAdLoaded();
 
                 try {
-                    Log.d(LOG_TAG, "Ad loaded");
+                    if(!"".equals(prebidAdId)){
+                        AdViewUtils.findPrebidCreativeSize(adView, new AdViewUtils.PbFindSizeListener() {
+                            @Override
+                            public void success(int width, int height) {
+                                adView.setAdSizes(new AdSize(width, height));
+                                handleLoad("Prebid");
+                            }
 
-                    final Context context = getContext();
-
-                    AdSize size = adView.getAdSize();
-
-                    int widthInPixel = size.getWidthInPixels(context);
-                    int width = size.getWidth();
-                    int heightInPixel = size.getHeightInPixels(context);
-                    int height = size.getHeight();
-                    int left = adView.getLeft();
-                    int top = adView.getTop();
-                    adView.measure(width, height);
-                    adView.layout(left, top, left + widthInPixel, top + heightInPixel);
-
-                    WritableMap event = Arguments.createMap();
-                    event.putInt("width", width);
-                    event.putInt("height", height);
-
-                    ReactContext reactContext = (ReactContext)getContext();
-                    reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(
-                        getId(),
-                        AD_LOADED,
-                        event);
+                            @Override
+                            public void failure(@NonNull PbFindSizeError error) {
+                                handleLoad("GAM");
+                            }
+                        });
+                    } else {
+                        handleLoad("GAM");
+                    }
                 } catch (Exception e) {
 
                 }
