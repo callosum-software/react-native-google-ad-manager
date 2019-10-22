@@ -60,15 +60,19 @@ class BannerView extends ReactViewGroup {
     private void createAdView(){
         this.destroyAdView();
 
-        final Context context = getContext();
-        this.adView = new PublisherAdView(context);
+        try {
+            final Context context = getContext();
+            this.adView = new PublisherAdView(context);
 
-        this.adView.setAdUnitId(adId);
+            this.adView.setAdUnitId(adId);
 
-        AdSize []arr = adSizes.toArray(new AdSize[0]);
-        this.adView.setAdSizes(arr);
+            AdSize []arr = adSizes.toArray(new AdSize[0]);
+            this.adView.setAdSizes(arr);
 
-        this.addView(this.adView);
+            this.addView(this.adView);
+        } catch (Exception e) {
+
+        }
     }
 
     private String getFailedToLoadReason(int code){
@@ -128,47 +132,56 @@ class BannerView extends ReactViewGroup {
             @Override
             public void onAdLoaded() {
                 super.onAdLoaded();
-                Log.d(LOG_TAG, "Ad loaded");
 
-                final Context context = getContext();
+                try {
+                    Log.d(LOG_TAG, "Ad loaded");
 
-                AdSize size = adView.getAdSize();
+                    final Context context = getContext();
 
-                int widthInPixel = size.getWidthInPixels(context);
-                int width = size.getWidth();
-                int heightInPixel = size.getHeightInPixels(context);
-                int height = size.getHeight();
-                int left = adView.getLeft();
-                int top = adView.getTop();
-                adView.measure(width, height);
-                adView.layout(left, top, left + widthInPixel, top + heightInPixel);
+                    AdSize size = adView.getAdSize();
 
-                WritableMap event = Arguments.createMap();
-                event.putInt("width", width);
-                event.putInt("height", height);
+                    int widthInPixel = size.getWidthInPixels(context);
+                    int width = size.getWidth();
+                    int heightInPixel = size.getHeightInPixels(context);
+                    int height = size.getHeight();
+                    int left = adView.getLeft();
+                    int top = adView.getTop();
+                    adView.measure(width, height);
+                    adView.layout(left, top, left + widthInPixel, top + heightInPixel);
 
-                ReactContext reactContext = (ReactContext)getContext();
-                reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(
+                    WritableMap event = Arguments.createMap();
+                    event.putInt("width", width);
+                    event.putInt("height", height);
+
+                    ReactContext reactContext = (ReactContext)getContext();
+                    reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(
                         getId(),
                         AD_LOADED,
                         event);
+                } catch (Exception e) {
+
+                }
             }
 
             @Override
             public void onAdFailedToLoad(int errorCode) {
-                String errorMessage = getFailedToLoadReason(errorCode);
-                // Code to be executed when an ad request fails.
-                Log.d(LOG_TAG, "Ad failed to load. Reason: " + errorMessage);
+                try {
+                    String errorMessage = getFailedToLoadReason(errorCode);
 
-                destroyAdView();
+                    Log.d(LOG_TAG, "Ad failed to load. Reason: " + errorMessage);
 
-                WritableMap event = Arguments.createMap();
-                event.putString("errorMessage", errorMessage);
-                ReactContext reactContext = (ReactContext)getContext();
-                reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(
+                    destroyAdView();
+
+                    WritableMap event = Arguments.createMap();
+                    event.putString("errorMessage", errorMessage);
+                    ReactContext reactContext = (ReactContext)getContext();
+                    reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(
                         getId(),
                         AD_FAILED,
                         event);
+                } catch (Exception e) {
+
+                }
             }
         });
     }
@@ -192,7 +205,6 @@ class BannerView extends ReactViewGroup {
         final AdSize adSize = this.adView.getAdSize();
 
         if(!"".equals(prebidAdId)){
-            // prebidAdId is set
             final String prebidAdUnitId = this.prebidAdId;
 
             BannerAdUnit bannerAdUnit = new BannerAdUnit(prebidAdUnitId, 300, 250);
@@ -214,7 +226,7 @@ class BannerView extends ReactViewGroup {
     }
 
     protected void loadAdIfPropsSet(){
-        if(adId != null && prebidAdId != null && adSizes != null && testDeviceIds != null && targeting != null){
+        if(adId != null && prebidAdId != null && adSizes != null && adSizes.size() > 0 && testDeviceIds != null && targeting != null){
             this.createAdView();
             this.setListeners();
             this.loadAd();
@@ -273,18 +285,22 @@ public class BannerViewManager extends ViewGroupManager<BannerView> {
 
     @ReactProp(name = "adSizes")
     public void setSize(BannerView view, @Nullable ReadableArray adSizes) {
-        ArrayList<AdSize> list = new ArrayList<>();
+        try {
+            ArrayList<AdSize> list = new ArrayList<>();
 
-        for(int i = 0; i < adSizes.size(); i++){
-            ReadableArray sizes = adSizes.getArray(i);
-            Integer width = sizes.getInt(0);
-            Integer height = sizes.getInt(1);
-            AdSize adSize = new AdSize(width, height);
-            list.add(adSize);
+            for(int i = 0; i < adSizes.size(); i++){
+                ReadableArray sizes = adSizes.getArray(i);
+                Integer width = sizes.getInt(0);
+                Integer height = sizes.getInt(1);
+                AdSize adSize = new AdSize(width, height);
+                list.add(adSize);
+            }
+
+            view.adSizes = list;
+            view.loadAdIfPropsSet();
+        } catch (Exception e) {
+
         }
-
-        view.adSizes = list;
-        view.loadAdIfPropsSet();
     }
 
     @ReactProp(name = "prebidAdId")
