@@ -4,36 +4,9 @@ This library integrates Banners for Google Ad Manager. To create issues and PRs 
 
 ## Getting started
 
+For React Native versions < 0.60 use version 0.+ of this library and checkout the corresponding README file.
+
 `$ npm install @callosum/react-native-google-ad-manager --save`
-
-### Mostly automatic installation
-
-`$ react-native link @callosum/react-native-google-ad-manager`
-
-### Manual installation
-
-
-#### iOS
-
-1. In XCode, in the project navigator, right click `Libraries` ➜ `Add Files to [your project's name]`
-2. Go to `node_modules` ➜ `@callosum/react-native-google-ad-manager` and add `RNGoogleAdManager.xcodeproj`
-3. In XCode, in the project navigator, select your project. Add `libRNGoogleAdManager.a` to your project's `Build Phases` ➜ `Link Binary With Libraries`
-4. Run your project (`Cmd+R`)<
-
-#### Android
-
-1. Open up `android/app/src/main/java/[...]/MainActivity.java`
-  - Add `import de.callosumSw.RNGoogleAdManager.RNGoogleAdManagerPackage;` to the imports at the top of the file
-  - Add `new RNGoogleAdManagerPackage()` to the list returned by the `getPackages()` method
-2. Append the following lines to `android/settings.gradle`:
-  	```
-  	include ':@callosum_react-native-google-ad-manager'
-  	project(':@callosum_react-native-google-ad-manager').projectDir = new File(rootProject.projectDir, 	'../node_modules/@callosum/react-native-google-ad-manager/android')
-  	```
-3. Insert the following lines inside the dependencies block in `android/app/build.gradle`:
-  	```
-      compile project(':@callosum_react-native-google-ad-manager')
-  	```
 
 ## Integration
 Learn how to set up GAM for your app.
@@ -49,13 +22,6 @@ $(inherited)
 $(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME)
 ```
 #### GAM
-- Add the GAM SDK to your Podfile
-```diff
-target 'MyApp' do
-    ...
-+   pod 'Google-Mobile-Ads-SDK', '~> 7.43.0'
-end
-```
 - Activate as Ad Manager app by editing your Info.plist
 ```diff
 ...
@@ -101,7 +67,7 @@ import { RNGAMBanner } from '@callosum/react-native-google-ad-manager';
 const AdBanner = () => (
   <RNGAMBanner
     adId="/6499/example/banner"
-    size={RNGAMBanner.sizes.BANNER}
+    adSizes={[[300, 250], [320, 480]]}
     testDeviceIds={[RNGAMBanner.simulatorTestId]}
     onAdLoaded={() => console.log('loaded')}
     onAdFailedToLoad={error => console.log('failed:', error)}
@@ -127,11 +93,11 @@ const AdBanner = () => (
 #### Banner
 ```
 type Banner = {
-  adId: string,
+  adId: String,
   onAdFailedToLoad: function,
   onAdLoaded: function,
-  size: BANNER || MEDIUM_RECTANGLE,
+  adSizes: Array<Array<width, height>>,
   style: styles,
-  testDeviceIds: array
+  testDeviceIds: Array
 }
 ```

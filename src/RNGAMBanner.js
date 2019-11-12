@@ -10,25 +10,10 @@ import {
 
 const noop = () => {}
 
-const { simulatorTestId, sizes } = NativeModules.RNGoogleAdManager
-
-const mappedSizes = sizes.reduce((acc, curr) => ({ ...acc, [curr]: curr }), {})
+const { simulatorTestId } = NativeModules.RNGoogleAdManager
 
 class RNGAMBanner extends React.PureComponent {
-  static sizes = mappedSizes
   static simulatorTestId = simulatorTestId
-  static getDerivedStateFromProps(props, state) {
-    const { testDeviceIds, size } = props
-    const isSizeValid = sizes.includes(size)
-
-    if (isSizeValid) {
-      return { ...state, testDeviceIds, validAdSize: size }
-    }
-
-    return { ...state, testDeviceIds }
-  }
-
-  state = { testDeviceIds: undefined, validAdSize: undefined }
 
   destroyBanner = () => {
     if (this._ref) {
@@ -51,8 +36,20 @@ class RNGAMBanner extends React.PureComponent {
     }
   }
 
+  _onAdClicked = ({ nativeEvent }) => {
+    this.props.onAdClicked(nativeEvent)
+  }
+
+  _onAdClosed = ({ nativeEvent }) => {
+    this.props.onAdClosed(nativeEvent)
+  }
+
   _onAdFailedToLoad = ({ nativeEvent }) => {
-    this.props.onAdFailedToLoad(nativeEvent.errorMessage)
+    this.props.onAdFailedToLoad(nativeEvent)
+  }
+
+  _onAdLoaded = ({ nativeEvent }) => {
+    this.props.onAdLoaded(nativeEvent)
   }
 
   _setRef = ref => {
@@ -60,17 +57,27 @@ class RNGAMBanner extends React.PureComponent {
   }
 
   render() {
-    const { adId, onAdLoaded, style } = this.props
-    const { testDeviceIds, validAdSize } = this.state
+    const {
+      adId,
+      adSizes,
+      prebidAdId,
+      style,
+      targeting,
+      testDeviceIds,
+    } = this.props
 
     return (
       <RNGAMBannerView
         adId={adId}
-        onAdLoaded={onAdLoaded}
+        adSizes={adSizes}
+        onAdClicked={this._onAdClicked}
+        onAdClosed={this._onAdClosed}
         onAdFailedToLoad={this._onAdFailedToLoad}
+        onAdLoaded={this._onAdLoaded}
+        prebidAdId={prebidAdId}
         ref={this._setRef}
-        size={validAdSize}
         style={style}
+        targeting={targeting}
         testDeviceIds={testDeviceIds}
       />
     )
@@ -79,17 +86,25 @@ class RNGAMBanner extends React.PureComponent {
 
 RNGAMBanner.propTypes = {
   adId: P.string.isRequired,
+  adSizes: P.arrayOf(P.arrayOf(P.number)).isRequired,
+  onAdClicked: P.func,
+  onAdClosed: P.func,
   onAdFailedToLoad: P.func,
   onAdLoaded: P.func,
-  size: P.oneOf(sizes).isRequired, // eslint-disable-line react/no-unused-prop-types
+  prebidAdId: P.string,
   style: ViewPropTypes.style,
-  testDeviceIds: P.arrayOf(P.string), // eslint-disable-line react/no-unused-prop-types
+  targeting: P.object,
+  testDeviceIds: P.arrayOf(P.string),
 }
 
 RNGAMBanner.defaultProps = {
+  onAdClicked: noop,
+  onAdClosed: noop,
   onAdFailedToLoad: noop,
   onAdLoaded: noop,
+  prebidAdId: '',
   style: {},
+  targeting: {},
   testDeviceIds: [],
 }
 

@@ -35,5 +35,6 @@ repositories {
 dependencies {
     implementation('com.facebook.react:react-native:+')
     implementation('com.google.android.gms:play-services-ads:17.2.0')
+    implementation files('lib/PrebidMobile-core.jar')
+    implementation files('lib/PrebidMobile.jar')
 }
-  

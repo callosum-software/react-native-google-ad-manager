@@ -1,13 +1,16 @@
 package de.callosumSw.RNGoogleAdManager;
 
+import android.app.Activity;
 import android.content.Context;
-import android.support.annotation.Nullable;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import android.util.Log;
 import android.view.View;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReadableArray;
+import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.common.MapBuilder;
 import com.facebook.react.uimanager.ThemedReactContext;
@@ -17,33 +20,33 @@ import com.facebook.react.uimanager.events.RCTEventEmitter;
 import com.facebook.react.views.view.ReactViewGroup;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.doubleclick.AppEventListener;
 import com.google.android.gms.ads.doubleclick.PublisherAdRequest;
 import com.google.android.gms.ads.doubleclick.PublisherAdView;
 
+import org.prebid.mobile.BannerAdUnit;
+import org.prebid.mobile.ResultCode;
+import org.prebid.mobile.OnCompleteListener;
+import org.prebid.mobile.addendum.AdViewUtils;
+import org.prebid.mobile.addendum.PbFindSizeError;
+
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 
 class BannerView extends ReactViewGroup {
-    private final String LOG_TAG = "RNGoogleAdManager";
+    public static final String LOG_TAG = "RNGoogleAdManager";
 
-    public static final String BANNER = "BANNER";
-    public static final String MEDIUM_RECTANGLE = "MEDIUM_RECTANGLE";
-
-    public static final Map<String, AdSize> supportedAdSizesMap;
-    static {
-        Map<String, AdSize> map = new HashMap<String, AdSize>();
-        map.put(BANNER, AdSize.BANNER);
-        map.put(MEDIUM_RECTANGLE, AdSize.MEDIUM_RECTANGLE);
-
-        supportedAdSizesMap = Collections.unmodifiableMap(map);
-    }
+    public static final String AD_CLICKED = "AD_CLICKED";
+    public static final String AD_CLOSED = "AD_CLOSED";
+    public static final String AD_FAILED = "AD_FAILED";
+    public static final String AD_LOADED = "AD_LOADED";
 
     protected PublisherAdView adView;
     protected String adId = null;
-    protected AdSize adSize = null;
+    protected ArrayList<AdSize> adSizes = null;
+    protected String prebidAdId = null;
     protected ArrayList<String> testDeviceIds = null;
+    protected Map<String, Object> targeting = null;
 
     public BannerView (final Context context) {
         super(context);
@@ -59,13 +62,19 @@ class BannerView extends ReactViewGroup {
     private void createAdView(){
         this.destroyAdView();
 
-        final Context context = getContext();
-        this.adView = new PublisherAdView(context);
+        try {
+            final Context context = getContext();
+            this.adView = new PublisherAdView(context);
 
-        this.adView.setAdUnitId(adId);
-        this.adView.setAdSizes(adSize);
+            this.adView.setAdUnitId(adId);
 
-        this.addView(this.adView);
+            AdSize []arr = adSizes.toArray(new AdSize[0]);
+            this.adView.setAdSizes(arr);
+
+            this.addView(this.adView);
+        } catch (Exception e) {
+
+        }
     }
 
     private String getFailedToLoadReason(int code){
@@ -83,46 +92,126 @@ class BannerView extends ReactViewGroup {
         }
     }
 
-    protected AdSize getGAMAdSizeFromString(String size){
-        return supportedAdSizesMap.get(size);
+    public class BannerAppEventListener extends Activity implements AppEventListener {
+        @Override
+        public void onAppEvent(String name, String info) {
+            switch (name) {
+                case AD_CLICKED: {
+                    Log.d(LOG_TAG, "Ad clicked");
+
+                    WritableMap event = Arguments.createMap();
+                    event.putString("url", info);
+
+                    ReactContext reactContext = (ReactContext)getContext();
+                    reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(
+                            getId(),
+                            AD_CLICKED,
+                            event);
+
+                    break;
+                }
+
+                case AD_CLOSED: {
+                    Log.d(LOG_TAG, "Ad closed");
+
+                    destroyAdView();
+
+                    ReactContext reactContext = (ReactContext)getContext();
+                    reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(
+                            getId(),
+                            AD_CLOSED,
+                            null);
+
+                    break;
+                }
+            }
+        }
+    }
+
+    protected void sendLoadEvent(int width, int height) {
+        WritableMap event = Arguments.createMap();
+        event.putInt("width", width);
+        event.putInt("height", height);
+
+        ReactContext reactContext = (ReactContext)getContext();
+        reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(
+                getId(),
+                AD_LOADED,
+                event);
+    }
+
+    protected void handleLoad(String adServer) {
+        try {
+            Log.d(LOG_TAG, "Ad loaded. Server: " + adServer);
+
+            final Context context = getContext();
+
+            AdSize size = adView.getAdSize();
+
+            int widthInPixel = size.getWidthInPixels(context);
+            int width = size.getWidth();
+            int heightInPixel = size.getHeightInPixels(context);
+            int height = size.getHeight();
+            int left = adView.getLeft();
+            int top = adView.getTop();
+
+            adView.measure(width, height);
+            adView.layout(left, top, left + widthInPixel, top + heightInPixel);
+
+            sendLoadEvent(width, height);
+        } catch (Exception e) {
+
+        }
     }
 
     protected void setListeners(){
+        this.adView.setAppEventListener(new BannerAppEventListener());
         this.adView.setAdListener(new AdListener() {
             @Override
             public void onAdLoaded() {
-                // Code to be executed when an ad finishes loading.
-                Log.d(LOG_TAG, "Ad loaded");
+                super.onAdLoaded();
 
-                final Context context = getContext();
+                try {
+                    if(!"".equals(prebidAdId)){
+                        AdViewUtils.findPrebidCreativeSize(adView, new AdViewUtils.PbFindSizeListener() {
+                            @Override
+                            public void success(int width, int height) {
+                                adView.setAdSizes(new AdSize(width, height));
+                                handleLoad("Prebid");
+                            }
 
-                int width = adView.getAdSize().getWidthInPixels(context);
-                int height = adView.getAdSize().getHeightInPixels(context);
-                int left = adView.getLeft();
-                int top = adView.getTop();
-                adView.measure(width, height);
-                adView.layout(left, top, left + width, top + height);
+                            @Override
+                            public void failure(@NonNull PbFindSizeError error) {
+                                handleLoad("GAM");
+                            }
+                        });
+                    } else {
+                        handleLoad("GAM");
+                    }
+                } catch (Exception e) {
 
-                ReactContext reactContext = (ReactContext)getContext();
-                reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(
-                        getId(),
-                        "adLoaded",
-                        null);
+                }
             }
 
             @Override
             public void onAdFailedToLoad(int errorCode) {
-                String errorMessage = getFailedToLoadReason(errorCode);
-                // Code to be executed when an ad request fails.
-                Log.d(LOG_TAG, "Ad failed to load. Reason: " + errorMessage);
+                try {
+                    String errorMessage = getFailedToLoadReason(errorCode);
 
-                WritableMap event = Arguments.createMap();
-                event.putString("errorMessage", errorMessage);
-                ReactContext reactContext = (ReactContext)getContext();
-                reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(
+                    Log.d(LOG_TAG, "Ad failed to load. Reason: " + errorMessage);
+
+                    destroyAdView();
+
+                    WritableMap event = Arguments.createMap();
+                    event.putString("errorMessage", errorMessage);
+                    ReactContext reactContext = (ReactContext)getContext();
+                    reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(
                         getId(),
-                        "adFailedToLoad",
+                        AD_FAILED,
                         event);
+                } catch (Exception e) {
+
+                }
             }
         });
     }
@@ -134,14 +223,40 @@ class BannerView extends ReactViewGroup {
             adRequestBuilder.addTestDevice(testId);
         }
 
-        Log.d(LOG_TAG, "Requesting Banner " + this.adView.getAdUnitId() + " with size " + this.adView.getAdSize());
+        for (Map.Entry<String, Object> entry : targeting.entrySet()) {
+            String key = entry.getKey();
+            ArrayList value =  (ArrayList) entry.getValue();
 
-        PublisherAdRequest adRequest = adRequestBuilder.build();
-        this.adView.loadAd(adRequest);
+            adRequestBuilder.addCustomTargeting(key, value);
+        }
+
+        final PublisherAdRequest adRequest = adRequestBuilder.build();
+        final String adUnitId = this.adView.getAdUnitId();
+        final AdSize adSize = this.adView.getAdSize();
+
+        if(!"".equals(prebidAdId)){
+            final String prebidAdUnitId = this.prebidAdId;
+
+            BannerAdUnit bannerAdUnit = new BannerAdUnit(prebidAdUnitId, 300, 250);
+
+            Log.d(LOG_TAG, "Prebid request with adunit id " + prebidAdUnitId);
+
+            bannerAdUnit.fetchDemand(adRequest, new OnCompleteListener() {
+                @Override
+                public void onComplete(ResultCode resultCode) {
+                    Log.d(LOG_TAG, "Prebid response code: " + resultCode);
+                    Log.d(LOG_TAG, "GAM Banner request with adunit id " + adUnitId + " with size " + adSize);
+                    BannerView.this.adView.loadAd(adRequest);
+                }
+            });
+        } else {
+            Log.d(LOG_TAG, "GAM Banner request with adunit id " + adUnitId + " with size " + adSize);
+            this.adView.loadAd(adRequest);
+        }
     }
 
     protected void loadAdIfPropsSet(){
-        if(this.adId != null && this.adSize != null && testDeviceIds != null){
+        if(adId != null && prebidAdId != null && adSizes != null && adSizes.size() > 0 && testDeviceIds != null && targeting != null){
             this.createAdView();
             this.setListeners();
             this.loadAd();
@@ -173,14 +288,22 @@ public class BannerViewManager extends ViewGroupManager<BannerView> {
     @Override
     public Map getExportedCustomBubblingEventTypeConstants() {
         return MapBuilder.builder()
-                .put("adLoaded",
+                .put(BannerView.AD_LOADED,
                         MapBuilder.of(
                                 "phasedRegistrationNames",
                                 MapBuilder.of("bubbled", "onAdLoaded")))
-                .put("adFailedToLoad",
+                .put(BannerView.AD_FAILED,
                         MapBuilder.of(
                                 "phasedRegistrationNames",
                                 MapBuilder.of("bubbled", "onAdFailedToLoad")))
+                .put(BannerView.AD_CLICKED,
+                        MapBuilder.of(
+                                "phasedRegistrationNames",
+                                MapBuilder.of("bubbled", "onAdClicked")))
+                .put(BannerView.AD_CLOSED,
+                        MapBuilder.of(
+                                "phasedRegistrationNames",
+                                MapBuilder.of("bubbled", "onAdClosed")))
                 .build();
     }
 
@@ -190,10 +313,29 @@ public class BannerViewManager extends ViewGroupManager<BannerView> {
         view.loadAdIfPropsSet();
     }
 
-    @ReactProp(name = "size")
-    public void setSize(BannerView view, @Nullable String size) {
-        AdSize adSize = view.getGAMAdSizeFromString(size);
-        view.adSize = adSize;
+    @ReactProp(name = "adSizes")
+    public void setSize(BannerView view, @Nullable ReadableArray adSizes) {
+        try {
+            ArrayList<AdSize> list = new ArrayList<>();
+
+            for(int i = 0; i < adSizes.size(); i++){
+                ReadableArray sizes = adSizes.getArray(i);
+                Integer width = sizes.getInt(0);
+                Integer height = sizes.getInt(1);
+                AdSize adSize = new AdSize(width, height);
+                list.add(adSize);
+            }
+
+            view.adSizes = list;
+            view.loadAdIfPropsSet();
+        } catch (Exception e) {
+
+        }
+    }
+
+    @ReactProp(name = "prebidAdId")
+    public void setPrebidAdId(BannerView view, @Nullable String prebidAdId) {
+        view.prebidAdId = prebidAdId;
         view.loadAdIfPropsSet();
     }
 
@@ -207,6 +349,12 @@ public class BannerViewManager extends ViewGroupManager<BannerView> {
         }
 
         view.testDeviceIds = list;
+        view.loadAdIfPropsSet();
+    }
+
+    @ReactProp(name = "targeting")
+    public void setTargeting(BannerView view, ReadableMap targeting) {
+        view.targeting = targeting.toHashMap();
         view.loadAdIfPropsSet();
     }
 

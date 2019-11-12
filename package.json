@@ -1,6 +1,6 @@
 {
   "name": "@callosum/react-native-google-ad-manager",
-  "version": "0.3.1",
+  "version": "1.0.0-rc.7",
   "description": "Google Ad Manager for react-native",
   "main": "index.js",
   "scripts": {
