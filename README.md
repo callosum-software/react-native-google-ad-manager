@@ -67,7 +67,7 @@ import { RNGAMBanner } from '@callosum/react-native-google-ad-manager';
 const AdBanner = () => (
   <RNGAMBanner
     adId="/6499/example/banner"
-    size={RNGAMBanner.sizes.BANNER}
+    adSizes={[[300, 250], [320, 480]]}
     testDeviceIds={[RNGAMBanner.simulatorTestId]}
     onAdLoaded={() => console.log('loaded')}
     onAdFailedToLoad={error => console.log('failed:', error)}
@@ -93,11 +93,11 @@ const AdBanner = () => (
 #### Banner
 ```
 type Banner = {
-  adId: string,
+  adId: String,
   onAdFailedToLoad: function,
   onAdLoaded: function,
-  size: BANNER || MEDIUM_RECTANGLE,
+  adSizes: Array<Array<width, height>>,
   style: styles,
-  testDeviceIds: array
+  testDeviceIds: Array
 }
 ```
