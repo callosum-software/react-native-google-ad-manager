@@ -1,8 +1,8 @@
 import P from 'prop-types'
 import React from 'react'
 import {
-  NativeModules,
   findNodeHandle,
+  NativeModules,
   requireNativeComponent,
   UIManager,
   ViewPropTypes,
@@ -15,26 +15,20 @@ const { simulatorTestId } = NativeModules.RNGoogleAdManager
 class RNGAMBanner extends React.PureComponent {
   static simulatorTestId = simulatorTestId
 
-  destroyBanner = () => {
+  _commandBuilder = commandName => () => {
     if (this._ref) {
       UIManager.dispatchViewManagerCommand(
         findNodeHandle(this._ref),
-        UIManager.getViewManagerConfig('RNGAMBannerView').Commands
-          .destroyBanner,
+        UIManager.getViewManagerConfig('RNGAMBannerView').Commands[commandName],
         []
       )
     }
   }
 
-  loadBanner = () => {
-    if (this._ref) {
-      UIManager.dispatchViewManagerCommand(
-        findNodeHandle(this._ref),
-        UIManager.getViewManagerConfig('RNGAMBannerView').Commands.loadBanner,
-        []
-      )
-    }
-  }
+  addBannerView = this._commandBuilder('addBannerView')
+  destroyBanner = this._commandBuilder('destroyBanner')
+  loadBanner = this._commandBuilder('loadBanner')
+  removeBannerView = this._commandBuilder('removeBannerView')
 
   _onAdClicked = ({ nativeEvent }) => {
     this.props.onAdClicked(nativeEvent)
@@ -50,6 +44,10 @@ class RNGAMBanner extends React.PureComponent {
 
   _onAdLoaded = ({ nativeEvent }) => {
     this.props.onAdLoaded(nativeEvent)
+  }
+
+  _onAdRequest = ({ nativeEvent }) => {
+    this.props.onAdRequest(nativeEvent)
   }
 
   _setRef = ref => {
@@ -74,6 +72,7 @@ class RNGAMBanner extends React.PureComponent {
         onAdClosed={this._onAdClosed}
         onAdFailedToLoad={this._onAdFailedToLoad}
         onAdLoaded={this._onAdLoaded}
+        onAdRequest={this._onAdRequest}
         prebidAdId={prebidAdId}
         ref={this._setRef}
         style={style}
@@ -91,6 +90,7 @@ RNGAMBanner.propTypes = {
   onAdClosed: P.func,
   onAdFailedToLoad: P.func,
   onAdLoaded: P.func,
+  onAdRequest: P.func,
   prebidAdId: P.string,
   style: ViewPropTypes.style,
   targeting: P.object,
@@ -102,6 +102,7 @@ RNGAMBanner.defaultProps = {
   onAdClosed: noop,
   onAdFailedToLoad: noop,
   onAdLoaded: noop,
+  onAdRequest: noop,
   prebidAdId: '',
   style: {},
   targeting: {},
