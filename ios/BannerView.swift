@@ -122,11 +122,16 @@ class BannerView: UIView, GADAppEventDelegate, GADBannerViewDelegate, GADAdSizeD
     }
     
     @objc func addBannerView() {
+        if(bannerView == nil) {
+            createAdView()
+        }
         addAdView()
     }
     
     @objc func destroyBanner() {
-        destroyAdView()
+        if(bannerView != nil) {
+            destroyAdView()
+        }
     }
     
     @objc func loadBanner() {
@@ -137,6 +142,8 @@ class BannerView: UIView, GADAppEventDelegate, GADBannerViewDelegate, GADAdSizeD
     }
 
     @objc func removeBannerView() {
-        removeAdView()
+        if(bannerView != nil) {
+            removeAdView()
+        }
     }
 }

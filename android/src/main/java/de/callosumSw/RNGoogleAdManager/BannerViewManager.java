@@ -264,16 +264,22 @@ class BannerView extends ReactViewGroup {
         }
     }
 
-    protected void addBannerView(){
+    protected void addBannerView() {
+        if(this.adView == null ){
+            this.createAdView();
+            this.setListeners();
+        }
         this.addAdView();
     }
 
-    protected void destroyBanner(){
-        this.destroyAdView();
+    protected void destroyBanner() {
+        if(this.adView != null) {
+            this.destroyAdView();
+        }
     }
 
-    protected void loadBanner(){
-        if(this.adView == null){
+    protected void loadBanner() {
+        if(this.adView == null) {
             this.createAdView();
             this.setListeners();
         }
@@ -281,17 +287,19 @@ class BannerView extends ReactViewGroup {
         this.loadAd();
     }
 
-    protected void removeBannerView(){
-        this.removeAdView();
+    protected void removeBannerView() {
+        if(this.adView != null) {
+            this.removeAdView();
+        }
     }
 
-    protected void setAdUnitId(){
+    protected void setAdUnitId() {
         if(this.adView != null){
             this.adView.setAdUnitId(adId);
         }
     }
 
-    protected void setAdSizes(){
+    protected void setAdSizes() {
         if(this.adView != null) {
             AdSize[] arr = adSizes.toArray(new AdSize[0]);
             this.adView.setAdSizes(arr);
