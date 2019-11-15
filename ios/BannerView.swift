@@ -17,51 +17,32 @@ class BannerView: UIView, GADAppEventDelegate, GADBannerViewDelegate, GADAdSizeD
     @objc var onAdClosed: RCTDirectEventBlock?
     @objc var onAdLoaded: RCTDirectEventBlock?
     @objc var onAdFailedToLoad: RCTDirectEventBlock?
+    @objc var onAdRequest: RCTDirectEventBlock?
     
-    @objc var adId: String? = nil {
-        didSet {
-            loadAdIfPropsSet()
-        }
+    @objc var adId: String? = nil
+    @objc var adSizes: Array<Array<Int>>? = nil
+    @objc var targeting: NSDictionary? = nil
+    @objc var testDeviceIds: Array<String>? = nil
+    
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+    }
+       
+    required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
     
-    @objc var adSizes: Array<Array<Int>>? = nil {
-        didSet {
-            if(adSizes != nil){
-                loadAdIfPropsSet()
-            }
-        }
-    }
-    
-    @objc var targeting: NSDictionary? = nil {
-        didSet {
-            loadAdIfPropsSet()
-        }
-    }
-    
-    @objc var testDeviceIds: Array<String>? = nil {
-        didSet {
-            loadAdIfPropsSet()
-        }
-    }
-    
-    @objc func loadBanner(){
-        loadAdIfPropsSet()
-    }
-    
-    @objc func destroyBanner(){
-        destroyAdView()
+    func addAdView(){
+        self.addSubview(bannerView!)
     }
     
     func destroyAdView(){
-        bannerView?.removeFromSuperview()
-        self.removeReactSubview(bannerView)
+        if(bannerView != nil){
+            bannerView?.removeFromSuperview()
+        }
     }
     
     func createAdView(){
-        if(bannerView != nil){
-            destroyAdView()
-        }
-        
         bannerView = DFPBannerView.init()
         
         let rootViewController = UIApplication.shared.delegate?.window??.rootViewController
@@ -82,16 +63,10 @@ class BannerView: UIView, GADAppEventDelegate, GADBannerViewDelegate, GADAdSizeD
         bannerView?.appEventDelegate = self
         bannerView?.adUnitID = adId
         bannerView?.validAdSizes = validAdSizes
-
-        self.addSubview(bannerView!)
-    }
-
-    override init(frame: CGRect) {
-        super.init(frame: frame)
     }
     
-    required init?(coder aDecoder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+    func removeAdView() {
+        self.removeReactSubview(bannerView)
     }
     
     func loadAd(){
@@ -104,15 +79,9 @@ class BannerView: UIView, GADAppEventDelegate, GADBannerViewDelegate, GADAdSizeD
         
         adRequest.customTargeting = dict
         adRequest.testDevices = testDeviceIds
-        
+
+        onAdRequest!()
         bannerView?.load(adRequest)
-    }
-    
-    func loadAdIfPropsSet(){
-        if (adId != nil && adSizes != nil && targeting != nil && testDeviceIds != nil) {
-            createAdView()
-            loadAd()
-        }
     }
     
     func adViewDidReceiveAd(_ bannerView: GADBannerView) {
@@ -149,7 +118,25 @@ class BannerView: UIView, GADAppEventDelegate, GADBannerViewDelegate, GADAdSizeD
     
     func adView(_ bannerView: GADBannerView, didFailToReceiveAdWithError error: GADRequestError) {
         print("\(LOG_TAG): Ad failed to load. Reason: \(error.localizedDescription)")
-        destroyAdView()
         onAdFailedToLoad!(["errorMessage": error.localizedDescription])
+    }
+    
+    @objc func addBannerView() {
+        addAdView()
+    }
+    
+    @objc func destroyBanner() {
+        destroyAdView()
+    }
+    
+    @objc func loadBanner() {
+        if(bannerView == nil) {
+            createAdView()
+        }
+        loadAd()
+    }
+
+    @objc func removeBannerView() {
+        removeAdView()
     }
 }

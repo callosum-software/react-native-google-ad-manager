@@ -17,6 +17,13 @@ class BannerViewManager: RCTViewManager {
         ]
     }
     
+    @objc func addBannerView(_ node: NSNumber) {
+        DispatchQueue.main.async {
+            let component = self.bridge.uiManager.view(forReactTag: node) as! BannerView
+            component.addBannerView()
+        }
+    }
+    
     @objc func loadBanner(_ node: NSNumber) {
         DispatchQueue.main.async {
             let component = self.bridge.uiManager.view(forReactTag: node) as! BannerView
@@ -28,6 +35,13 @@ class BannerViewManager: RCTViewManager {
         DispatchQueue.main.async {
             let component = self.bridge.uiManager.view(forReactTag: node) as! BannerView
             component.destroyBanner()
+        }
+    }
+    
+    @objc func removeBannerView(_ node: NSNumber) {
+        DispatchQueue.main.async {
+            let component = self.bridge.uiManager.view(forReactTag: node) as! BannerView
+            component.removeBannerView()
         }
     }
 }
