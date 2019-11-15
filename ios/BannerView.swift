@@ -80,7 +80,7 @@ class BannerView: UIView, GADAppEventDelegate, GADBannerViewDelegate, GADAdSizeD
         adRequest.customTargeting = dict
         adRequest.testDevices = testDeviceIds
 
-        onAdRequest!()
+        onAdRequest!([:])
         bannerView?.load(adRequest)
     }
     
