@@ -18,11 +18,26 @@ class BannerView: UIView, GADAppEventDelegate, GADBannerViewDelegate, GADAdSizeD
     @objc var onAdLoaded: RCTDirectEventBlock?
     @objc var onAdFailedToLoad: RCTDirectEventBlock?
     @objc var onAdRequest: RCTDirectEventBlock?
+    @objc var onPropsSet: RCTDirectEventBlock? {
+        didSet {
+            sendIfPropsSet()
+        }
+    }
     
-    @objc var adId: String? = nil
-    @objc var adSizes: Array<Array<Int>>? = nil
+    @objc var adId: String? = nil {
+        didSet {
+            sendIfPropsSet()
+        }
+    }
+
+    @objc var adSizes: Array<Array<Int>>? = nil {
+        didSet {
+            sendIfPropsSet()
+        }
+    }
+
     @objc var targeting: NSDictionary? = nil
-    @objc var testDeviceIds: Array<String>? = nil
+    @objc var testDeviceIds: Array<String>? = [""]
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -30,6 +45,12 @@ class BannerView: UIView, GADAppEventDelegate, GADBannerViewDelegate, GADAdSizeD
        
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    func sendIfPropsSet(){
+        if(adSizes != nil && adId != nil && onPropsSet != nil){
+            onPropsSet!([:])
+        }
     }
     
     func addAdView(){

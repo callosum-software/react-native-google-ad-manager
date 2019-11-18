@@ -41,6 +41,7 @@ class BannerView extends ReactViewGroup {
     public static final String AD_FAILED = "AD_FAILED";
     public static final String AD_LOADED = "AD_LOADED";
     public static final String AD_REQUEST = "AD_REQUEST";
+    public static final String PROPS_SET = "PROPS_SET";
 
     protected PublisherAdView adView;
     protected String adId = null;
@@ -51,6 +52,18 @@ class BannerView extends ReactViewGroup {
 
     public BannerView (final Context context) {
         super(context);
+    }
+
+    private void sendIfPropsSet(){
+        if(adId != null && adSizes != null){
+            WritableMap event = Arguments.createMap();
+
+            ReactContext reactContext = (ReactContext)getContext();
+            reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(
+                    getId(),
+                    PROPS_SET,
+                    event);
+        }
     }
 
     private void addAdView(){
@@ -297,6 +310,7 @@ class BannerView extends ReactViewGroup {
         if(this.adView != null){
             this.adView.setAdUnitId(adId);
         }
+        sendIfPropsSet();
     }
 
     protected void setAdSizes() {
@@ -304,6 +318,7 @@ class BannerView extends ReactViewGroup {
             AdSize[] arr = adSizes.toArray(new AdSize[0]);
             this.adView.setAdSizes(arr);
         }
+        sendIfPropsSet();
     }
 }
 
@@ -353,6 +368,10 @@ public class BannerViewManager extends ViewGroupManager<BannerView> {
                         MapBuilder.of(
                                 "phasedRegistrationNames",
                                 MapBuilder.of("bubbled", "onAdRequest")))
+                .put(BannerView.PROPS_SET,
+                        MapBuilder.of(
+                                "phasedRegistrationNames",
+                                MapBuilder.of("bubbled", "onPropsSet")))
                 .build();
     }
 

@@ -26,6 +26,7 @@ RCT_EXPORT_VIEW_PROPERTY(onAdClosed, RCTDirectEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onAdLoaded, RCTDirectEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onAdFailedToLoad, RCTDirectEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onAdRequest, RCTDirectEventBlock)
+RCT_EXPORT_VIEW_PROPERTY(onPropsSet, RCTDirectEventBlock)
 
 RCT_EXTERN_METHOD(addBannerView:(nonnull NSNumber *)node)
 RCT_EXTERN_METHOD(loadBanner:(nonnull NSNumber *)node)

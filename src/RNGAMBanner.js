@@ -50,6 +50,10 @@ class RNGAMBanner extends React.PureComponent {
     this.props.onAdRequest(nativeEvent)
   }
 
+  _onPropsSet = ({ nativeEvent }) => {
+    this.props.onPropsSet(nativeEvent)
+  }
+
   _setRef = ref => {
     this._ref = ref
   }
@@ -73,6 +77,7 @@ class RNGAMBanner extends React.PureComponent {
         onAdFailedToLoad={this._onAdFailedToLoad}
         onAdLoaded={this._onAdLoaded}
         onAdRequest={this._onAdRequest}
+        onPropsSet={this._onPropsSet}
         prebidAdId={prebidAdId}
         ref={this._setRef}
         style={style}
@@ -91,6 +96,7 @@ RNGAMBanner.propTypes = {
   onAdFailedToLoad: P.func,
   onAdLoaded: P.func,
   onAdRequest: P.func,
+  onPropsSet: P.func,
   prebidAdId: P.string,
   style: ViewPropTypes.style,
   targeting: P.object,
@@ -103,6 +109,7 @@ RNGAMBanner.defaultProps = {
   onAdFailedToLoad: noop,
   onAdLoaded: noop,
   onAdRequest: noop,
+  onPropsSet: noop,
   prebidAdId: '',
   style: {},
   targeting: {},
