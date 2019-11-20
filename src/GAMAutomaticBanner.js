@@ -13,6 +13,7 @@ class GAMAutomaticBanner extends React.PureComponent {
 
   _onPropsSet = () => {
     const { onPropsSet } = this.props
+
     this._ref.current.loadBanner()
 
     if (typeof onAdLoaded === 'function') {
@@ -24,6 +25,7 @@ class GAMAutomaticBanner extends React.PureComponent {
     const { onAdLoaded } = this.props
 
     this._ref.current.addBannerView()
+
     if (typeof onAdLoaded === 'function') {
       onAdLoaded(nativeEvent)
     }
