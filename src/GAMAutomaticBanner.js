@@ -4,7 +4,7 @@ import { RNGAMBanner } from './RNGAMBanner'
 class GAMAutomaticBanner extends React.PureComponent {
   static simulatorTestId = RNGAMBanner.simulatorTestId
 
-  _ref = this.props.forwardedRef || React.createRef()
+  _ref = React.createRef()
 
   componentWillUnmount() {
     this._ref.current.removeBannerView()
@@ -12,7 +12,12 @@ class GAMAutomaticBanner extends React.PureComponent {
   }
 
   _onPropsSet = () => {
+    const { onPropsSet } = this.props
     this._ref.current.loadBanner()
+
+    if (typeof onAdLoaded === 'function') {
+      onPropsSet()
+    }
   }
 
   _onAdLoaded = () => {
@@ -35,5 +40,7 @@ class GAMAutomaticBanner extends React.PureComponent {
     )
   }
 }
+
+GAMAutomaticBanner.propTypes = RNGAMBanner.propTypes
 
 export { GAMAutomaticBanner }

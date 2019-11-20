@@ -12,8 +12,25 @@ const noop = () => {}
 
 const { simulatorTestId } = NativeModules.RNGoogleAdManager
 
+const AD_STATE = {
+  DESTROYED: 'destroyed',
+  REQUESTED: 'requested',
+}
+
+const VIEW_STATE = {
+  ADDED: 'added',
+  REMOVED: 'removed',
+}
+
 class RNGAMBanner extends React.PureComponent {
   static simulatorTestId = simulatorTestId
+
+  state = {
+    adState: AD_STATE.DESTROYED,
+    arePropsSet: false,
+    isRequestedToLoad: false,
+    viewState: VIEW_STATE.REMOVED,
+  }
 
   _commandBuilder = commandName => () => {
     if (this._ref) {
@@ -25,10 +42,48 @@ class RNGAMBanner extends React.PureComponent {
     }
   }
 
-  addBannerView = this._commandBuilder('addBannerView')
-  destroyBanner = this._commandBuilder('destroyBanner')
-  loadBanner = this._commandBuilder('loadBanner')
-  removeBannerView = this._commandBuilder('removeBannerView')
+  _addBannerView = this._commandBuilder('addBannerView')
+  _destroyBanner = this._commandBuilder('destroyBanner')
+  _loadBanner = this._commandBuilder('loadBanner')
+  _removeBannerView = this._commandBuilder('removeBannerView')
+
+  addBannerView = () => {
+    const { viewState } = this.state
+
+    if (viewState !== VIEW_STATE.ADDED) {
+      this.setState({ viewState: VIEW_STATE.ADDED })
+      this._addBannerView()
+    }
+  }
+
+  destroyBanner = () => {
+    const { adState } = this.state
+
+    if (adState !== AD_STATE.DESTROYED) {
+      this.setState({ adState: AD_STATE.DESTROYED })
+      this._destroyBanner()
+    }
+  }
+
+  loadBanner = () => {
+    const { arePropsSet } = this.state
+
+    if (arePropsSet) {
+      this.setState({ adState: AD_STATE.LOADED })
+      this._loadBanner()
+    } else {
+      this.setState({ isRequestedToLoad: true })
+    }
+  }
+
+  removeBannerView = () => {
+    const { viewState } = this.state
+
+    if (viewState !== VIEW_STATE.REMOVED) {
+      this.setState({ viewState: VIEW_STATE.REMOVED })
+      this._removeBannerView()
+    }
+  }
 
   _onAdClicked = ({ nativeEvent }) => {
     this.props.onAdClicked(nativeEvent)
@@ -47,10 +102,18 @@ class RNGAMBanner extends React.PureComponent {
   }
 
   _onAdRequest = ({ nativeEvent }) => {
+    this.setState({ adState: AD_STATE.REQUESTED })
     this.props.onAdRequest(nativeEvent)
   }
 
   _onPropsSet = ({ nativeEvent }) => {
+    if (this.state.isRequestedToLoad) {
+      this.setState({ arePropsSet: true, isRequestedToLoad: false })
+      this._loadBanner()
+    } else {
+      this.setState({ arePropsSet: true })
+    }
+
     this.props.onPropsSet(nativeEvent)
   }
 
