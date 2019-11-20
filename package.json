@@ -4,7 +4,8 @@
   "description": "Google Ad Manager for react-native",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest",
+    "test:watch": "jest --watch"
   },
   "keywords": [
     "react-native",
@@ -17,14 +18,20 @@
   "author": "Callosum Software <oss@callosum-sw.de>",
   "license": "MIT",
   "peerDependencies": {
-    "react-native": ">=0.60.0",
-    "react": "^16.8.3",
-    "prop-types": "^15.7.2"
+    "prop-types": "^15.7.2",
+    "react": "^16.8.3"
   },
   "devDependencies": {
+    "@babel/core": "^7.7.2",
+    "@babel/plugin-proposal-class-properties": "^7.7.0",
+    "@babel/preset-env": "^7.7.1",
+    "@babel/preset-react": "^7.7.0",
     "@callosum/eslint-config-callosum": "^0.1.0",
     "babel-eslint": "^10.0.1",
+    "babel-plugin-transform-export-extensions": "^6.22.0",
     "babel-preset-react-native": "^4.0.1",
+    "enzyme": "^3.10.0",
+    "enzyme-adapter-react-16": "^1.15.1",
     "eslint": "^5.16.0",
     "eslint-config-airbnb": "^17.1.0",
     "eslint-config-prettier": "^4.3.0",
@@ -32,7 +39,14 @@
     "eslint-plugin-jsx-a11y": "^6.2.1",
     "eslint-plugin-prettier": "^3.1.0",
     "eslint-plugin-react": "^7.13.0",
-    "prettier": "^1.15.2"
+    "jest": "^24.9.0",
+    "jest-environment-enzyme": "^7.1.2",
+    "jest-enzyme": "^7.1.2",
+    "prettier": "^1.15.2",
+    "react": "^16.12.0",
+    "react-dom": "^16.12.0",
+    "react-native": "^0.61.4",
+    "react-test-renderer": "^16.12.0"
   },
   "repository": {
     "type": "git",

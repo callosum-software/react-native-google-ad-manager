@@ -1,3 +1,11 @@
 {
-  "extends": ["@callosum/eslint-config-callosum"]
+  "extends": ["@callosum/eslint-config-callosum"],
+  "overrides": [
+    {
+      "files": [ "**/*.test.js" ],
+      "globals": {
+        "shallow": true
+      }
+    }
+  ]
 }

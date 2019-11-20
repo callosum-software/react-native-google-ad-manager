@@ -1,0 +1,22 @@
+image: nikolaik/python-nodejs:latest
+
+stages:
+- test
+
+cache:
+  key: ${CI_PROJECT_ID}
+  paths:
+  - .yarn
+  - node_modules/
+
+test:
+  stage: test
+  only: ['merge_requests', 'master']
+  coverage: /All files\s*\|\s*([\d\.]+)/
+  before_script:
+    - yarn config set cache-folder .yarn
+    - yarn install
+  after_script:
+    - rm -rf ./coverage
+  script:
+    - yarn test --coverage
