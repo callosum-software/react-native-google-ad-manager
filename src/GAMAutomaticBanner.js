@@ -20,12 +20,12 @@ class GAMAutomaticBanner extends React.PureComponent {
     }
   }
 
-  _onAdLoaded = () => {
+  _onAdLoaded = nativeEvent => {
     const { onAdLoaded } = this.props
 
     this._ref.current.addBannerView()
     if (typeof onAdLoaded === 'function') {
-      onAdLoaded()
+      onAdLoaded(nativeEvent)
     }
   }
 
