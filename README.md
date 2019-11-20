@@ -14,13 +14,8 @@ Learn how to set up GAM for your app.
 ### iOS
 #### Swift
 
-1. Under `Build Settings` section `Build Options` set `Always Embed Swift Started Libraries` to `true`
-2. Make sure you have the following under `library search paths`
+- Under `Build Settings` section `Build Options` set `Always Embed Swift Started Libraries` to `true`
 
-```
-$(inherited)
-$(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME)
-```
 #### GAM
 - Activate as Ad Manager app by editing your Info.plist
 ```diff
@@ -59,24 +54,90 @@ $(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME)
 
 ## Usage
 
-### Banner
+### Automatic Banner
+This banner component automatically fetches an ad and adds the view when the ad is sucessfully loaded. It also takes care of the cleanup on unmount.
+
+#### Props
+
+```
+type GAMAutomaticBanner = {
+  adId: String,
+  onAdFailedToLoad: function<error>,
+  onAdLoaded: function<object: { height, width }>,
+  onAdRequest: function<>,
+  adSizes: Array<Array<width, height>>,
+  testDeviceIds: Array<string>,
+  style: styles,
+}
+```
+
+#### Example
 
 ```javascript
-import { RNGAMBanner } from '@callosum/react-native-google-ad-manager';
+import { GAMAutomaticBanner } from '@callosum/react-native-google-ad-manager';
 
 const AdBanner = () => (
-  <RNGAMBanner
+  <GAMAutomaticBanner
     adId="/6499/example/banner"
-    adSizes={[[300, 250], [320, 480]]}
+    adSizes={[[320, 50]]}
     testDeviceIds={[RNGAMBanner.simulatorTestId]}
-    onAdLoaded={() => console.log('loaded')}
-    onAdFailedToLoad={error => console.log('failed:', error)}
-    style={{
-      height: 50,
-      width: 320,
-    }}
+    style={{ height: 50, width: 320 }}
   />
 )
+```
+
+### Banner
+This is a banner component that gives your more access to pure functionality in order to implement dynamic solutions like lazy loading and more performant integrations for repeating units in lists. It implements the same props as the automatic banner.
+
+Additionally, you have the following methos available:
+
+#### `loadBanner()`
+This loads an ad but does not add it to the view hierarchy.
+
+#### `destroyBanner()`
+This destroys the created / loaded ad.
+
+#### `addBannerView()`
+This adds the native view to the view hierarchy.
+
+#### `removeBannerView()`
+This removes the native view from the view hierarchy.
+
+#### Example
+
+```javascript
+import { useRef } from "react";
+import { RNGAMBanner } from "@callosum/react-native-google-ad-manager";
+
+const AdBanner = () => {
+  const _ref = useRef(null);
+
+  useEffect(() => {
+    _ref.current.loadBanner()
+
+    return () => {
+      _ref.current.removeBannerView()
+      _ref.current.destroyBanner()
+    }
+  }, [])
+
+  return (
+    <RNGAMBanner
+      adId="/6499/example/banner"
+      adSizes={[[300, 250]]}
+      testDeviceIds={[RNGAMBanner.simulatorTestId]}
+      onAdLoaded={({ height, width }) => {
+        _ref.current.addBannerView()
+      }}
+      onAdFailedToLoad={error => {
+        console.log(error)
+      }}
+      ref={_ref}
+      style={{ height: 300, width: 250 }}
+    />
+  );
+};
+
 ```
 
 ## API
@@ -87,17 +148,3 @@ const AdBanner = () => (
 |---|---|
 | simulatorTestId | *platform specific simulator id* |
 | sizes | BANNER, MEDIUM_RECTANGLE |
-
-### Components
-
-#### Banner
-```
-type Banner = {
-  adId: String,
-  onAdFailedToLoad: function,
-  onAdLoaded: function,
-  adSizes: Array<Array<width, height>>,
-  style: styles,
-  testDeviceIds: Array
-}
-```

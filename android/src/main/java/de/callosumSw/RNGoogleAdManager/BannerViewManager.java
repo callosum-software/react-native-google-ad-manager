@@ -40,6 +40,8 @@ class BannerView extends ReactViewGroup {
     public static final String AD_CLOSED = "AD_CLOSED";
     public static final String AD_FAILED = "AD_FAILED";
     public static final String AD_LOADED = "AD_LOADED";
+    public static final String AD_REQUEST = "AD_REQUEST";
+    public static final String PROPS_SET = "PROPS_SET";
 
     protected PublisherAdView adView;
     protected String adId = null;
@@ -52,16 +54,23 @@ class BannerView extends ReactViewGroup {
         super(context);
     }
 
-    protected void destroyAdView(){
-        if (this.adView != null) {
-            this.adView.destroy();
-            this.removeView(this.adView);
+    private void sendIfPropsSet(){
+        if(adId != null && adSizes != null){
+            WritableMap event = Arguments.createMap();
+
+            ReactContext reactContext = (ReactContext)getContext();
+            reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(
+                    getId(),
+                    PROPS_SET,
+                    event);
         }
     }
 
-    private void createAdView(){
-        this.destroyAdView();
+    private void addAdView(){
+        this.addView(this.adView);
+    }
 
+    private void createAdView(){
         try {
             final Context context = getContext();
             this.adView = new PublisherAdView(context);
@@ -70,11 +79,19 @@ class BannerView extends ReactViewGroup {
 
             AdSize []arr = adSizes.toArray(new AdSize[0]);
             this.adView.setAdSizes(arr);
-
-            this.addView(this.adView);
         } catch (Exception e) {
 
         }
+    }
+
+    private void destroyAdView(){
+        if (this.adView != null) {
+            this.adView.destroy();
+        }
+    }
+
+    private void removeAdView(){
+        this.removeView(this.adView);
     }
 
     private String getFailedToLoadReason(int code){
@@ -128,7 +145,7 @@ class BannerView extends ReactViewGroup {
         }
     }
 
-    protected void sendLoadEvent(int width, int height) {
+    private void sendLoadEvent(int width, int height) {
         WritableMap event = Arguments.createMap();
         event.putInt("width", width);
         event.putInt("height", height);
@@ -140,7 +157,7 @@ class BannerView extends ReactViewGroup {
                 event);
     }
 
-    protected void handleLoad(String adServer) {
+    private void handleLoad(String adServer) {
         try {
             Log.d(LOG_TAG, "Ad loaded. Server: " + adServer);
 
@@ -164,7 +181,7 @@ class BannerView extends ReactViewGroup {
         }
     }
 
-    protected void setListeners(){
+    private void setListeners(){
         this.adView.setAppEventListener(new BannerAppEventListener());
         this.adView.setAdListener(new AdListener() {
             @Override
@@ -234,6 +251,11 @@ class BannerView extends ReactViewGroup {
         final String adUnitId = this.adView.getAdUnitId();
         final AdSize adSize = this.adView.getAdSize();
 
+        WritableMap event = Arguments.createMap();
+
+        ReactContext reactContext = (ReactContext)getContext();
+        reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(getId(), AD_REQUEST, event);
+
         if(!"".equals(prebidAdId)){
             final String prebidAdUnitId = this.prebidAdId;
 
@@ -255,20 +277,58 @@ class BannerView extends ReactViewGroup {
         }
     }
 
-    protected void loadAdIfPropsSet(){
-        if(adId != null && prebidAdId != null && adSizes != null && adSizes.size() > 0 && testDeviceIds != null && targeting != null){
+    protected void addBannerView() {
+        if(this.adView == null ){
             this.createAdView();
             this.setListeners();
-            this.loadAd();
         }
+        this.addAdView();
+    }
+
+    protected void destroyBanner() {
+        if(this.adView != null) {
+            this.destroyAdView();
+        }
+    }
+
+    protected void loadBanner() {
+        if(this.adView == null) {
+            this.createAdView();
+            this.setListeners();
+        }
+
+        this.loadAd();
+    }
+
+    protected void removeBannerView() {
+        if(this.adView != null) {
+            this.removeAdView();
+        }
+    }
+
+    protected void setAdUnitId() {
+        if(this.adView != null){
+            this.adView.setAdUnitId(adId);
+        }
+        sendIfPropsSet();
+    }
+
+    protected void setAdSizes() {
+        if(this.adView != null) {
+            AdSize[] arr = adSizes.toArray(new AdSize[0]);
+            this.adView.setAdSizes(arr);
+        }
+        sendIfPropsSet();
     }
 }
 
 public class BannerViewManager extends ViewGroupManager<BannerView> {
     private static final String REACT_CLASS = "RNGAMBannerView";
 
-    public static final int COMMAND_LOAD_BANNER = 1;
+    public static final int COMMAND_ADD_BANNER_VIEW = 1;
     public static final int COMMAND_DESTROY_BANNER = 2;
+    public static final int COMMAND_LOAD_BANNER = 3;
+    public static final int COMMAND_REMOVE_BANNER_VIEW = 4;
 
     @Override
     public String getName() {
@@ -288,14 +348,6 @@ public class BannerViewManager extends ViewGroupManager<BannerView> {
     @Override
     public Map getExportedCustomBubblingEventTypeConstants() {
         return MapBuilder.builder()
-                .put(BannerView.AD_LOADED,
-                        MapBuilder.of(
-                                "phasedRegistrationNames",
-                                MapBuilder.of("bubbled", "onAdLoaded")))
-                .put(BannerView.AD_FAILED,
-                        MapBuilder.of(
-                                "phasedRegistrationNames",
-                                MapBuilder.of("bubbled", "onAdFailedToLoad")))
                 .put(BannerView.AD_CLICKED,
                         MapBuilder.of(
                                 "phasedRegistrationNames",
@@ -304,13 +356,29 @@ public class BannerViewManager extends ViewGroupManager<BannerView> {
                         MapBuilder.of(
                                 "phasedRegistrationNames",
                                 MapBuilder.of("bubbled", "onAdClosed")))
+                .put(BannerView.AD_FAILED,
+                        MapBuilder.of(
+                                "phasedRegistrationNames",
+                                MapBuilder.of("bubbled", "onAdFailedToLoad")))
+                .put(BannerView.AD_LOADED,
+                        MapBuilder.of(
+                                "phasedRegistrationNames",
+                                MapBuilder.of("bubbled", "onAdLoaded")))
+                .put(BannerView.AD_REQUEST,
+                        MapBuilder.of(
+                                "phasedRegistrationNames",
+                                MapBuilder.of("bubbled", "onAdRequest")))
+                .put(BannerView.PROPS_SET,
+                        MapBuilder.of(
+                                "phasedRegistrationNames",
+                                MapBuilder.of("bubbled", "onPropsSet")))
                 .build();
     }
 
     @ReactProp(name = "adId")
     public void setAdId(BannerView view, @Nullable String adId) {
         view.adId = adId;
-        view.loadAdIfPropsSet();
+        view.setAdUnitId();
     }
 
     @ReactProp(name = "adSizes")
@@ -327,7 +395,7 @@ public class BannerViewManager extends ViewGroupManager<BannerView> {
             }
 
             view.adSizes = list;
-            view.loadAdIfPropsSet();
+            view.setAdSizes();
         } catch (Exception e) {
 
         }
@@ -336,7 +404,6 @@ public class BannerViewManager extends ViewGroupManager<BannerView> {
     @ReactProp(name = "prebidAdId")
     public void setPrebidAdId(BannerView view, @Nullable String prebidAdId) {
         view.prebidAdId = prebidAdId;
-        view.loadAdIfPropsSet();
     }
 
     @ReactProp(name = "testDeviceIds")
@@ -349,30 +416,41 @@ public class BannerViewManager extends ViewGroupManager<BannerView> {
         }
 
         view.testDeviceIds = list;
-        view.loadAdIfPropsSet();
     }
 
     @ReactProp(name = "targeting")
     public void setTargeting(BannerView view, ReadableMap targeting) {
         view.targeting = targeting.toHashMap();
-        view.loadAdIfPropsSet();
     }
 
     @Nullable
     @Override
     public Map<String, Integer> getCommandsMap() {
-        return MapBuilder.of("loadBanner", COMMAND_LOAD_BANNER, "destroyBanner", COMMAND_DESTROY_BANNER);
+        return MapBuilder.of(
+                "addBannerView", COMMAND_ADD_BANNER_VIEW,
+                "destroyBanner", COMMAND_DESTROY_BANNER,
+                "loadBanner", COMMAND_LOAD_BANNER,
+                "removeBannerView", COMMAND_REMOVE_BANNER_VIEW
+        );
     }
 
     @Override
     public void receiveCommand(BannerView view, int commandId, @Nullable ReadableArray args) {
         switch (commandId) {
-            case COMMAND_LOAD_BANNER:
-                view.loadAdIfPropsSet();
+            case COMMAND_ADD_BANNER_VIEW:
+                view.addBannerView();
                 break;
 
             case COMMAND_DESTROY_BANNER:
-                view.destroyAdView();
+                view.destroyBanner();
+                break;
+
+            case COMMAND_LOAD_BANNER:
+                view.loadBanner();
+                break;
+
+            case COMMAND_REMOVE_BANNER_VIEW:
+                view.removeBannerView();
                 break;
         }
     }

@@ -1,5 +1,6 @@
 import { NativeModules } from 'react-native'
 import { RNGAMBanner } from './src/RNGAMBanner'
+import { GAMAutomaticBanner } from './src/GAMAutomaticBanner'
 
 const noop = () => {}
 
@@ -24,6 +25,7 @@ export const Prebid = {
   setUserAgent: setPrebidUserAgent,
 }
 
+export { GAMAutomaticBanner }
 export { RNGAMBanner }
 
-export default { Prebid, RNGAMBanner }
+export default { GAMAutomaticBanner, Prebid, RNGAMBanner }
