@@ -79,7 +79,7 @@ class RNGAMBanner extends React.PureComponent {
     const { arePropsSet } = this.state
 
     if (arePropsSet) {
-      this.setState({ adState: AD_STATE.LOADED })
+      this.setState({ adState: AD_STATE.REQUESTED })
       this._loadBanner()
     } else {
       this.setState({ isRequestedToLoad: true })
