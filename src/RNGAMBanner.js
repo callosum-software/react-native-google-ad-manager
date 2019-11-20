@@ -47,12 +47,20 @@ class RNGAMBanner extends React.PureComponent {
   _loadBanner = this._commandBuilder('loadBanner')
   _removeBannerView = this._commandBuilder('removeBannerView')
 
+  _throwWarn = functionName => {
+    console.warn(
+      `You called ${functionName} even though it was already called. This probably means you have some kind of logic in place that is not working as expected.`
+    )
+  }
+
   addBannerView = () => {
     const { viewState } = this.state
 
     if (viewState !== VIEW_STATE.ADDED) {
       this.setState({ viewState: VIEW_STATE.ADDED })
       this._addBannerView()
+    } else if (__DEV__ && viewState === VIEW_STATE.ADDED) {
+      this._throwWarn('addBannerView')
     }
   }
 
@@ -62,6 +70,8 @@ class RNGAMBanner extends React.PureComponent {
     if (adState !== AD_STATE.DESTROYED) {
       this.setState({ adState: AD_STATE.DESTROYED })
       this._destroyBanner()
+    } else if (__DEV__ && adState === AD_STATE.DESTROYED) {
+      this._throwWarn('destroyBanner')
     }
   }
 
@@ -82,6 +92,8 @@ class RNGAMBanner extends React.PureComponent {
     if (viewState !== VIEW_STATE.REMOVED) {
       this.setState({ viewState: VIEW_STATE.REMOVED })
       this._removeBannerView()
+    } else if (__DEV__ && viewState === VIEW_STATE.REMOVED) {
+      this._throwWarn('removeBannerView')
     }
   }
 

@@ -5,6 +5,23 @@ const adSizes = [[250, 300]]
 const adId = 'test'
 const testDeviceIds = ['test_id']
 
+const orgConsole = global.console
+
+beforeEach(() => {
+  const mockedConsole = {
+    warn: jest.fn(),
+  }
+
+  global.console = {
+    ...orgConsole,
+    ...mockedConsole,
+  }
+})
+
+afterAll(() => {
+  global.console = orgConsole
+})
+
 describe('RNGAMBanner', () => {
   it('has instance functions & props', () => {
     const wrapper = shallow(
@@ -138,15 +155,30 @@ describe('RNGAMBanner', () => {
       instance.addBannerView()
 
       expect(instance._addBannerView).toBeCalledTimes(1)
+      expect(global.console.warn).toBeCalledTimes(1)
     })
 
     it('does not destory the banner if it is not requested', () => {
       const instance = createInstance()
       jest.spyOn(instance, '_destroyBanner')
 
-      instance.addBannerView()
+      instance.destroyBanner()
 
       expect(instance._destroyBanner).not.toBeCalled()
+    })
+
+    it('does not destroy the banner if it is already destroyed', () => {
+      const instance = createInstance()
+      jest.spyOn(instance, '_destroyBanner')
+
+      instance._onPropsSet(event)
+      instance.loadBanner()
+      instance._onAdRequest(event)
+      instance.destroyBanner()
+      instance.destroyBanner()
+
+      expect(instance._destroyBanner).toBeCalledTimes(1)
+      expect(global.console.warn).toBeCalledTimes(1)
     })
 
     it('destroys the banner view if it is requested', () => {
@@ -174,7 +206,7 @@ describe('RNGAMBanner', () => {
       expect(instance._destroyBanner).toBeCalled()
     })
 
-    it('does not destory the banner if it is not requested', () => {
+    it('does not remove the banner if it is not added', () => {
       const instance = createInstance()
       jest.spyOn(instance, '_removeBannerView')
 
@@ -194,6 +226,21 @@ describe('RNGAMBanner', () => {
       instance.removeBannerView()
 
       expect(instance._removeBannerView).toBeCalled()
+    })
+
+    it('does not remove the banner if it is already removed', () => {
+      const instance = createInstance()
+      jest.spyOn(instance, '_removeBannerView')
+
+      instance._onPropsSet(event)
+      instance.loadBanner()
+      instance._onAdRequest(event)
+      instance.addBannerView()
+      instance.removeBannerView()
+      instance.removeBannerView()
+
+      expect(instance._removeBannerView).toBeCalledTimes(1)
+      expect(global.console.warn).toBeCalledTimes(1)
     })
   })
 })
