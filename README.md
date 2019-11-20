@@ -66,7 +66,7 @@ type GAMAutomaticBanner = {
   onAdLoaded: function<object: { height, width }>,
   onAdRequest: function<>,
   adSizes: Array<Array<width, height>>,
-  testDeviceIds: Array<strings>
+  testDeviceIds: Array<string>,
   style: styles,
 }
 ```
