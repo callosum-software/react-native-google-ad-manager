@@ -6,6 +6,11 @@ class GAMAutomaticBanner extends React.PureComponent {
 
   _ref = React.createRef()
 
+  addBannerView = () => this._ref.current.addBannerView()
+  destroyBanner = () => this._ref.current.destroyBanner()
+  loadBanner = () => this._ref.current.loadBanner()
+  removeBannerView = () => this._ref.current.removeBannerView()
+
   componentWillUnmount() {
     this._ref.current.removeBannerView()
     this._ref.current.destroyBanner()
