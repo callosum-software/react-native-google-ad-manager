@@ -27,15 +27,18 @@ class RNGAMBanner extends React.PureComponent {
 
   state = {
     adState: AD_STATE.DESTROYED,
-    arePropsSet: false,
-    isRequestedToLoad: false,
     viewState: VIEW_STATE.REMOVED,
   }
 
+  _ref = React.createRef()
+  // prop change doesn't require rerender, has to be a class variable due to sync checking in loadBanner and onPropsSet
+  _arePropsSet = false
+  _isRequestedToLoad = false
+
   _commandBuilder = commandName => () => {
-    if (this._ref) {
+    if (this._ref.current) {
       UIManager.dispatchViewManagerCommand(
-        findNodeHandle(this._ref),
+        findNodeHandle(this._ref.current),
         UIManager.getViewManagerConfig('RNGAMBannerView').Commands[commandName],
         []
       )
@@ -76,13 +79,12 @@ class RNGAMBanner extends React.PureComponent {
   }
 
   loadBanner = () => {
-    const { arePropsSet } = this.state
-
-    if (arePropsSet) {
+    if (this._arePropsSet) {
       this.setState({ adState: AD_STATE.REQUESTED })
+
       this._loadBanner()
     } else {
-      this.setState({ isRequestedToLoad: true })
+      this._isRequestedToLoad = true
     }
   }
 
@@ -119,18 +121,16 @@ class RNGAMBanner extends React.PureComponent {
   }
 
   _onPropsSet = ({ nativeEvent }) => {
-    if (this.state.isRequestedToLoad) {
-      this.setState({ arePropsSet: true, isRequestedToLoad: false })
+    if (this._isRequestedToLoad) {
+      this._arePropsSet = true
+      this._isRequestedToLoad = false
+
       this._loadBanner()
     } else {
-      this.setState({ arePropsSet: true })
+      this._arePropsSet = true
     }
 
     this.props.onPropsSet(nativeEvent)
-  }
-
-  _setRef = ref => {
-    this._ref = ref
   }
 
   render() {
@@ -154,7 +154,7 @@ class RNGAMBanner extends React.PureComponent {
         onAdRequest={this._onAdRequest}
         onPropsSet={this._onPropsSet}
         prebidAdId={prebidAdId}
-        ref={this._setRef}
+        ref={this._ref}
         style={style}
         targeting={targeting}
         testDeviceIds={testDeviceIds}
