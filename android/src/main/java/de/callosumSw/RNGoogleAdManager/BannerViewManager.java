@@ -292,6 +292,14 @@ class BannerView extends ReactViewGroup {
     }
 
     protected void loadBanner() {
+        if(this.adView != null) {
+            final String _adUnitId = this.adView.getAdUnitId();
+
+            if (!adId.equals(_adUnitId) && _adUnitId != null) {
+                this.destroyAdView();
+            }
+        }
+
         if(this.adView == null) {
             this.createAdView();
             this.setListeners();
@@ -307,10 +315,9 @@ class BannerView extends ReactViewGroup {
     }
 
     protected void setAdUnitId() {
-        if(this.adView != null){
-            this.adView.setAdUnitId(adId);
+        if(this.adView == null){
+            sendIfPropsSet();
         }
-        sendIfPropsSet();
     }
 
     protected void setAdSizes() {

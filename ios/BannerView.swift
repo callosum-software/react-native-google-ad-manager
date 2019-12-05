@@ -13,6 +13,8 @@ class BannerView: UIView, GADAppEventDelegate, GADBannerViewDelegate, GADAdSizeD
     
     var width: Int?, height: Int? = nil
     
+    var isAdUnitSet: Bool = false
+    
     @objc var onAdClicked: RCTDirectEventBlock?
     @objc var onAdClosed: RCTDirectEventBlock?
     @objc var onAdLoaded: RCTDirectEventBlock?
@@ -26,7 +28,10 @@ class BannerView: UIView, GADAppEventDelegate, GADBannerViewDelegate, GADAdSizeD
     
     @objc var adId: String? = nil {
         didSet {
-            sendIfPropsSet()
+            if(isAdUnitSet == false){
+                sendIfPropsSet()
+                isAdUnitSet = true
+            }
         }
     }
 
@@ -82,7 +87,6 @@ class BannerView: UIView, GADAppEventDelegate, GADBannerViewDelegate, GADAdSizeD
         bannerView?.adSizeDelegate = self
         bannerView?.translatesAutoresizingMaskIntoConstraints = false
         bannerView?.appEventDelegate = self
-        bannerView?.adUnitID = adId
         bannerView?.validAdSizes = validAdSizes
     }
     
@@ -91,6 +95,8 @@ class BannerView: UIView, GADAppEventDelegate, GADBannerViewDelegate, GADAdSizeD
     }
     
     func loadAd(){
+        bannerView?.adUnitID = adId
+
         let adRequest = DFPRequest()
         var dict: [AnyHashable: Any] = [:]
         
