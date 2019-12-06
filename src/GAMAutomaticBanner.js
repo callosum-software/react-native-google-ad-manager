@@ -11,6 +11,15 @@ class GAMAutomaticBanner extends React.PureComponent {
   loadBanner = () => this._ref.current.loadBanner()
   removeBannerView = () => this._ref.current.removeBannerView()
 
+  componentDidUpdate(prevProps) {
+    const { adId } = this.props
+    const { adId: prevId } = prevProps
+
+    if (prevId !== adId) {
+      this._ref.current.loadBanner()
+    }
+  }
+
   componentWillUnmount() {
     this._ref.current.removeBannerView()
     this._ref.current.destroyBanner()
