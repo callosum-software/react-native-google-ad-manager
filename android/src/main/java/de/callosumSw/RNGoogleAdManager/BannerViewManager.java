@@ -67,7 +67,11 @@ class BannerView extends ReactViewGroup {
     }
 
     private void addAdView(){
-        this.addView(this.adView);
+        try {
+            this.addView(this.adView);
+        } catch (Exception e) {
+            Log.d(LOG_TAG, Log.getStackTraceString(e));
+        }
     }
 
     private void createAdView(){
@@ -80,18 +84,26 @@ class BannerView extends ReactViewGroup {
             AdSize []arr = adSizes.toArray(new AdSize[0]);
             this.adView.setAdSizes(arr);
         } catch (Exception e) {
-
+            Log.d(LOG_TAG, Log.getStackTraceString(e));
         }
     }
 
     private void destroyAdView(){
-        if (this.adView != null) {
-            this.adView.destroy();
+        try {
+            if (this.adView != null) {
+                this.adView.destroy();
+            }
+        } catch (Exception e) {
+            Log.d(LOG_TAG, Log.getStackTraceString(e));
         }
     }
 
     private void removeAdView(){
-        this.removeView(this.adView);
+        try {
+            this.removeView(this.adView);
+        } catch (Exception e) {
+            Log.d(LOG_TAG, "Ad clicked");
+        }
     }
 
     private String getFailedToLoadReason(int code){
@@ -177,7 +189,7 @@ class BannerView extends ReactViewGroup {
 
             sendLoadEvent(width, height);
         } catch (Exception e) {
-
+            Log.d(LOG_TAG, Log.getStackTraceString(e));
         }
     }
 
@@ -206,7 +218,7 @@ class BannerView extends ReactViewGroup {
                         handleLoad("GAM");
                     }
                 } catch (Exception e) {
-
+                    Log.d(LOG_TAG, Log.getStackTraceString(e));
                 }
             }
 
@@ -227,90 +239,110 @@ class BannerView extends ReactViewGroup {
                         AD_FAILED,
                         event);
                 } catch (Exception e) {
-
+                    Log.d(LOG_TAG, Log.getStackTraceString(e));
                 }
             }
         });
     }
 
     private void loadAd(){
-        PublisherAdRequest.Builder adRequestBuilder = new PublisherAdRequest.Builder();
+        try {
+            PublisherAdRequest.Builder adRequestBuilder = new PublisherAdRequest.Builder();
 
-        for(String testId : testDeviceIds){
-            adRequestBuilder.addTestDevice(testId);
-        }
+            for(String testId : testDeviceIds){
+                adRequestBuilder.addTestDevice(testId);
+            }
 
-        for (Map.Entry<String, Object> entry : targeting.entrySet()) {
-            String key = entry.getKey();
-            ArrayList value =  (ArrayList) entry.getValue();
+            for (Map.Entry<String, Object> entry : targeting.entrySet()) {
+                String key = entry.getKey();
+                ArrayList value =  (ArrayList) entry.getValue();
 
-            adRequestBuilder.addCustomTargeting(key, value);
-        }
+                adRequestBuilder.addCustomTargeting(key, value);
+            }
 
-        final PublisherAdRequest adRequest = adRequestBuilder.build();
-        final String adUnitId = this.adView.getAdUnitId();
-        final AdSize adSize = this.adView.getAdSize();
+            final PublisherAdRequest adRequest = adRequestBuilder.build();
+            final String adUnitId = this.adView.getAdUnitId();
+            final AdSize adSize = this.adView.getAdSize();
 
-        WritableMap event = Arguments.createMap();
+            WritableMap event = Arguments.createMap();
 
-        ReactContext reactContext = (ReactContext)getContext();
-        reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(getId(), AD_REQUEST, event);
+            ReactContext reactContext = (ReactContext)getContext();
+            reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(getId(), AD_REQUEST, event);
 
-        if(!"".equals(prebidAdId)){
-            final String prebidAdUnitId = this.prebidAdId;
+            if(!"".equals(prebidAdId)){
+                final String prebidAdUnitId = this.prebidAdId;
 
-            BannerAdUnit bannerAdUnit = new BannerAdUnit(prebidAdUnitId, 300, 250);
+                BannerAdUnit bannerAdUnit = new BannerAdUnit(prebidAdUnitId, 300, 250);
 
-            Log.d(LOG_TAG, "Prebid request with adunit id " + prebidAdUnitId);
+                Log.d(LOG_TAG, "Prebid request with adunit id " + prebidAdUnitId);
 
-            bannerAdUnit.fetchDemand(adRequest, new OnCompleteListener() {
-                @Override
-                public void onComplete(ResultCode resultCode) {
-                    Log.d(LOG_TAG, "Prebid response code: " + resultCode);
-                    Log.d(LOG_TAG, "GAM Banner request with adunit id " + adUnitId + " with size " + adSize);
-                    BannerView.this.adView.loadAd(adRequest);
-                }
-            });
-        } else {
-            Log.d(LOG_TAG, "GAM Banner request with adunit id " + adUnitId + " with size " + adSize);
-            this.adView.loadAd(adRequest);
+                bannerAdUnit.fetchDemand(adRequest, new OnCompleteListener() {
+                    @Override
+                    public void onComplete(ResultCode resultCode) {
+                        Log.d(LOG_TAG, "Prebid response code: " + resultCode);
+                        Log.d(LOG_TAG, "GAM Banner request with adunit id " + adUnitId + " with size " + adSize);
+                        BannerView.this.adView.loadAd(adRequest);
+                    }
+                });
+            } else {
+                Log.d(LOG_TAG, "GAM Banner request with adunit id " + adUnitId + " with size " + adSize);
+                this.adView.loadAd(adRequest);
+            }
+        } catch (Exception e) {
+            Log.d(LOG_TAG, Log.getStackTraceString(e));
         }
     }
 
     protected void addBannerView() {
-        if(this.adView == null ){
-            this.createAdView();
-            this.setListeners();
+        try {
+            if(this.adView == null ){
+                this.createAdView();
+                this.setListeners();
+            }
+            this.addAdView();
+        } catch (Exception e) {
+            Log.d(LOG_TAG, Log.getStackTraceString(e));
         }
-        this.addAdView();
     }
 
     protected void destroyBanner() {
-        if(this.adView != null) {
-            this.destroyAdView();
+        try {
+            if(this.adView != null) {
+                this.destroyAdView();
+            }
+        } catch (Exception e) {
+            Log.d(LOG_TAG, Log.getStackTraceString(e));
         }
     }
 
     protected void loadBanner() {
-        if(this.adView != null) {
-            final String _adUnitId = this.adView.getAdUnitId();
+        try {
+            if(this.adView != null) {
+                final String _adUnitId = this.adView.getAdUnitId();
 
-            if (!adId.equals(_adUnitId) && _adUnitId != null) {
-                this.destroyAdView();
+                if (!adId.equals(_adUnitId) && _adUnitId != null) {
+                    this.destroyAdView();
+                }
             }
-        }
 
-        if(this.adView == null) {
-            this.createAdView();
-            this.setListeners();
-        }
+            if(this.adView == null) {
+                this.createAdView();
+                this.setListeners();
+            }
 
-        this.loadAd();
+            this.loadAd();
+        } catch (Exception e) {
+            Log.d(LOG_TAG, Log.getStackTraceString(e));
+        }
     }
 
     protected void removeBannerView() {
-        if(this.adView != null) {
-            this.removeAdView();
+        try {
+            if(this.adView != null) {
+                this.removeAdView();
+            }
+        } catch (Exception e) {
+            Log.d(LOG_TAG, Log.getStackTraceString(e));
         }
     }
 
@@ -321,16 +353,21 @@ class BannerView extends ReactViewGroup {
     }
 
     protected void setAdSizes() {
-        if(this.adView != null) {
-            AdSize[] arr = adSizes.toArray(new AdSize[0]);
-            this.adView.setAdSizes(arr);
+        try {
+            if(this.adView != null) {
+                AdSize[] arr = adSizes.toArray(new AdSize[0]);
+                this.adView.setAdSizes(arr);
+            }
+            sendIfPropsSet();
+        } catch (Exception e) {
+            Log.d(LOG_TAG, Log.getStackTraceString(e));
         }
-        sendIfPropsSet();
     }
 }
 
 public class BannerViewManager extends ViewGroupManager<BannerView> {
     private static final String REACT_CLASS = "RNGAMBannerView";
+    public static final String LOG_TAG = "RNGoogleAdManager";
 
     public static final int COMMAND_ADD_BANNER_VIEW = 1;
     public static final int COMMAND_DESTROY_BANNER = 2;
@@ -384,8 +421,12 @@ public class BannerViewManager extends ViewGroupManager<BannerView> {
 
     @ReactProp(name = "adId")
     public void setAdId(BannerView view, @Nullable String adId) {
-        view.adId = adId;
-        view.setAdUnitId();
+        try {
+            view.adId = adId;
+            view.setAdUnitId();
+        } catch (Exception e) {
+            Log.d(LOG_TAG, Log.getStackTraceString(e));
+        }
     }
 
     @ReactProp(name = "adSizes")
@@ -404,7 +445,7 @@ public class BannerViewManager extends ViewGroupManager<BannerView> {
             view.adSizes = list;
             view.setAdSizes();
         } catch (Exception e) {
-
+            Log.d(LOG_TAG, Log.getStackTraceString(e));
         }
     }
 
@@ -415,14 +456,18 @@ public class BannerViewManager extends ViewGroupManager<BannerView> {
 
     @ReactProp(name = "testDeviceIds")
     public void setTestDeviceIds(BannerView view, ReadableArray testDeviceIds) {
-        ArrayList<String> list = new ArrayList<>();
+        try {
+            ArrayList<String> list = new ArrayList<>();
 
-        for(int i = 0; i < testDeviceIds.size(); i++){
-            String item = testDeviceIds.getString(i);
-            list.add(item);
+            for(int i = 0; i < testDeviceIds.size(); i++){
+                String item = testDeviceIds.getString(i);
+                list.add(item);
+            }
+
+            view.testDeviceIds = list;
+        } catch (Exception e) {
+            Log.d(LOG_TAG, Log.getStackTraceString(e));
         }
-
-        view.testDeviceIds = list;
     }
 
     @ReactProp(name = "targeting")
