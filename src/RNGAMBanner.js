@@ -25,15 +25,11 @@ const VIEW_STATE = {
 class RNGAMBanner extends React.PureComponent {
   static simulatorTestId = simulatorTestId
 
-  state = {
-    adState: AD_STATE.DESTROYED,
-    viewState: VIEW_STATE.REMOVED,
-  }
-
-  _ref = React.createRef()
-  // prop change doesn't require rerender, has to be a class variable due to sync checking in loadBanner and onPropsSet
-  _arePropsSet = false
+  _adState = AD_STATE.DESTROYED
+  _arePropsSet = false // prop change doesn't require rerender; sync checking in loadBanner and onPropsSet
   _isRequestedToLoad = false
+  _ref = React.createRef()
+  _viewState = VIEW_STATE.REMOVED
 
   _commandBuilder = commandName => () => {
     if (this._ref.current) {
@@ -57,31 +53,26 @@ class RNGAMBanner extends React.PureComponent {
   }
 
   addBannerView = () => {
-    const { viewState } = this.state
-
-    if (viewState !== VIEW_STATE.ADDED) {
-      this.setState({ viewState: VIEW_STATE.ADDED })
+    if (this._viewState !== VIEW_STATE.ADDED) {
+      this._viewState = VIEW_STATE.ADDED
       this._addBannerView()
-    } else if (__DEV__ && viewState === VIEW_STATE.ADDED) {
+    } else if (__DEV__ && this._viewState === VIEW_STATE.ADDED) {
       this._throwWarn('addBannerView')
     }
   }
 
   destroyBanner = () => {
-    const { adState } = this.state
-
-    if (adState !== AD_STATE.DESTROYED) {
-      this.setState({ adState: AD_STATE.DESTROYED })
+    if (this._adState !== AD_STATE.DESTROYED) {
+      this._adState = AD_STATE.DESTROYED
       this._destroyBanner()
-    } else if (__DEV__ && adState === AD_STATE.DESTROYED) {
+    } else if (__DEV__ && this._adState === AD_STATE.DESTROYED) {
       this._throwWarn('destroyBanner')
     }
   }
 
   loadBanner = () => {
     if (this._arePropsSet) {
-      this.setState({ adState: AD_STATE.REQUESTED })
-
+      this._adState = AD_STATE.REQUESTED
       this._loadBanner()
     } else {
       this._isRequestedToLoad = true
@@ -89,12 +80,10 @@ class RNGAMBanner extends React.PureComponent {
   }
 
   removeBannerView = () => {
-    const { viewState } = this.state
-
-    if (viewState !== VIEW_STATE.REMOVED) {
-      this.setState({ viewState: VIEW_STATE.REMOVED })
+    if (this._viewState !== VIEW_STATE.REMOVED) {
+      this._viewState = VIEW_STATE.REMOVED
       this._removeBannerView()
-    } else if (__DEV__ && viewState === VIEW_STATE.REMOVED) {
+    } else if (__DEV__ && this._viewState === VIEW_STATE.REMOVED) {
       this._throwWarn('removeBannerView')
     }
   }
@@ -116,7 +105,7 @@ class RNGAMBanner extends React.PureComponent {
   }
 
   _onAdRequest = ({ nativeEvent }) => {
-    this.setState({ adState: AD_STATE.REQUESTED })
+    this._adState = AD_STATE.REQUESTED
     this.props.onAdRequest(nativeEvent)
   }
 
