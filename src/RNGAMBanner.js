@@ -27,6 +27,7 @@ class RNGAMBanner extends React.PureComponent {
 
   _adState = AD_STATE.DESTROYED
   _arePropsSet = false // prop change doesn't require rerender; sync checking in loadBanner and onPropsSet
+  _isRequestedToAdd = false
   _isRequestedToLoad = false
   _ref = React.createRef()
   _viewState = VIEW_STATE.REMOVED
@@ -53,7 +54,9 @@ class RNGAMBanner extends React.PureComponent {
   }
 
   addBannerView = () => {
-    if (this._viewState !== VIEW_STATE.ADDED) {
+    this._isRequestedToAdd = !this._arePropsSet
+
+    if (this._arePropsSet && this._viewState !== VIEW_STATE.ADDED) {
       this._viewState = VIEW_STATE.ADDED
       this._addBannerView()
     } else if (__DEV__ && this._viewState === VIEW_STATE.ADDED) {
@@ -71,11 +74,11 @@ class RNGAMBanner extends React.PureComponent {
   }
 
   loadBanner = () => {
+    this._isRequestedToLoad = !this._arePropsSet
+
     if (this._arePropsSet) {
       this._adState = AD_STATE.REQUESTED
       this._loadBanner()
-    } else {
-      this._isRequestedToLoad = true
     }
   }
 
@@ -97,6 +100,7 @@ class RNGAMBanner extends React.PureComponent {
   }
 
   _onAdFailedToLoad = ({ nativeEvent }) => {
+    this._adState = AD_STATE.DESTROYED
     this.props.onAdFailedToLoad(nativeEvent)
   }
 
@@ -110,13 +114,14 @@ class RNGAMBanner extends React.PureComponent {
   }
 
   _onPropsSet = ({ nativeEvent }) => {
-    if (this._isRequestedToLoad) {
-      this._arePropsSet = true
-      this._isRequestedToLoad = false
+    this._arePropsSet = true
 
+    if (this._isRequestedToLoad) {
       this._loadBanner()
-    } else {
-      this._arePropsSet = true
+    }
+
+    if (this._isRequestedToAdd) {
+      this._addBannerView()
     }
 
     this.props.onPropsSet(nativeEvent)
