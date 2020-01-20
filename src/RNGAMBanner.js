@@ -23,6 +23,20 @@ const VIEW_STATE = {
 }
 
 class RNGAMBanner extends React.PureComponent {
+  static AD_SIZE = {
+    BANNER: [320, 50],
+    FULL_BANNER: [468, 60],
+    LARGE_BANNER: [320, 100],
+    LEADERBOARD: [728, 90],
+    MEDIUM_RECTANGLE: [300, 250],
+  }
+  static AD_TYPE = {
+    BANNER: 'BANNER',
+    FULL_BANNER: 'FULL_BANNER',
+    LARGE_BANNER: 'LARGE_BANNER',
+    LEADERBOARD: 'LEADERBOARD',
+    MEDIUM_RECTANGLE: 'MEDIUM_RECTANGLE',
+  }
   static simulatorTestId = simulatorTestId
 
   _adState = AD_STATE.DESTROYED
@@ -128,30 +142,22 @@ class RNGAMBanner extends React.PureComponent {
   }
 
   render() {
-    const {
-      adId,
-      adSizes,
-      prebidAdId,
-      style,
-      targeting,
-      testDeviceIds,
-    } = this.props
-
     return (
       <RNGAMBannerView
-        adId={adId}
-        adSizes={adSizes}
+        adId={this.props.adId}
+        adSizes={this.props.adSizes}
+        adType={this.props.adType}
         onAdClicked={this._onAdClicked}
         onAdClosed={this._onAdClosed}
         onAdFailedToLoad={this._onAdFailedToLoad}
         onAdLoaded={this._onAdLoaded}
         onAdRequest={this._onAdRequest}
         onPropsSet={this._onPropsSet}
-        prebidAdId={prebidAdId}
+        prebidAdId={this.props.prebidAdId}
         ref={this._ref}
-        style={style}
-        targeting={targeting}
-        testDeviceIds={testDeviceIds}
+        style={this.props.style}
+        targeting={this.props.targeting}
+        testDeviceIds={this.props.testDeviceIds}
       />
     )
   }
@@ -159,7 +165,8 @@ class RNGAMBanner extends React.PureComponent {
 
 RNGAMBanner.propTypes = {
   adId: P.string.isRequired,
-  adSizes: P.arrayOf(P.arrayOf(P.number)).isRequired,
+  adSizes: P.arrayOf(P.arrayOf(P.number)),
+  adType: P.string,
   onAdClicked: P.func,
   onAdClosed: P.func,
   onAdFailedToLoad: P.func,
@@ -173,6 +180,8 @@ RNGAMBanner.propTypes = {
 }
 
 RNGAMBanner.defaultProps = {
+  adSizes: undefined,
+  adType: undefined,
   onAdClicked: noop,
   onAdClosed: noop,
   onAdFailedToLoad: noop,
