@@ -264,8 +264,6 @@ class BannerView extends ReactViewGroup {
 
                     Log.d(LOG_TAG, "Ad failed to load. Reason: " + errorMessage);
 
-                    destroyAdView();
-
                     WritableMap event = Arguments.createMap();
                     event.putString("errorMessage", errorMessage);
                     ReactContext reactContext = (ReactContext)getContext();
