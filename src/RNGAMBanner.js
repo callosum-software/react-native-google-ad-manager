@@ -60,6 +60,7 @@ class RNGAMBanner extends React.PureComponent {
   _destroyBanner = this._commandBuilder('destroyBanner')
   _loadBanner = this._commandBuilder('loadBanner')
   _removeBannerView = this._commandBuilder('removeBannerView')
+  openDebugMenu = this._commandBuilder('openDebugMenu')
 
   _throwWarn = functionName => {
     console.warn(

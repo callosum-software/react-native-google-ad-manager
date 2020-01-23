@@ -20,6 +20,7 @@ import com.facebook.react.uimanager.events.RCTEventEmitter;
 import com.facebook.react.views.view.ReactViewGroup;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.doubleclick.AppEventListener;
 import com.google.android.gms.ads.doubleclick.PublisherAdRequest;
 import com.google.android.gms.ads.doubleclick.PublisherAdView;
@@ -351,9 +352,9 @@ class BannerView extends ReactViewGroup {
     protected void loadBanner() {
         try {
             if(this.adView != null) {
-                final String _adUnitId = this.adView.getAdUnitId();
+                final String adUnitId = this.adView.getAdUnitId();
 
-                if (!adId.equals(_adUnitId) && _adUnitId != null) {
+                if (!adId.equals(adUnitId) && adUnitId != null) {
                     this.destroyAdView();
                 }
             }
@@ -374,6 +375,14 @@ class BannerView extends ReactViewGroup {
             if(this.adView != null) {
                 this.removeAdView();
             }
+        } catch (Exception e) {
+            Log.d(LOG_TAG, Log.getStackTraceString(e));
+        }
+    }
+
+    protected void openDebugMenu() {
+        try {
+            MobileAds.openDebugMenu((ReactContext)getContext().getCurrentActivity(), adId);
         } catch (Exception e) {
             Log.d(LOG_TAG, Log.getStackTraceString(e));
         }
@@ -406,6 +415,9 @@ public class BannerViewManager extends ViewGroupManager<BannerView> {
     public static final int COMMAND_DESTROY_BANNER = 2;
     public static final int COMMAND_LOAD_BANNER = 3;
     public static final int COMMAND_REMOVE_BANNER_VIEW = 4;
+    public static final int COMMAND_PAUSE_BANNER_VIEW = 5;
+    public static final int COMMAND_RESUME_BANNER_VIEW = 6;
+    public static final int COMMAND_OPEN_DEBUG_MENU = 7;
 
     @Override
     public String getName() {
@@ -521,7 +533,8 @@ public class BannerViewManager extends ViewGroupManager<BannerView> {
                 "addBannerView", COMMAND_ADD_BANNER_VIEW,
                 "destroyBanner", COMMAND_DESTROY_BANNER,
                 "loadBanner", COMMAND_LOAD_BANNER,
-                "removeBannerView", COMMAND_REMOVE_BANNER_VIEW
+                "removeBannerView", COMMAND_REMOVE_BANNER_VIEW,
+                "openDebugMenu", COMMAND_OPEN_DEBUG_MENU
         );
     }
 
@@ -542,6 +555,10 @@ public class BannerViewManager extends ViewGroupManager<BannerView> {
 
             case COMMAND_REMOVE_BANNER_VIEW:
                 view.removeBannerView();
+                break;
+
+            case COMMAND_OPEN_DEBUG_MENU:
+                view.openDebugMenu();
                 break;
         }
     }
