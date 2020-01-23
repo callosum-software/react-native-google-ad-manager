@@ -382,7 +382,8 @@ class BannerView extends ReactViewGroup {
 
     protected void openDebugMenu() {
         try {
-            MobileAds.openDebugMenu((ReactContext)getContext().getCurrentActivity(), adId);
+            ReactContext reactContext = (ReactContext)getContext();
+            MobileAds.openDebugMenu(reactContext.getCurrentActivity(), adId);
         } catch (Exception e) {
             Log.d(LOG_TAG, Log.getStackTraceString(e));
         }
