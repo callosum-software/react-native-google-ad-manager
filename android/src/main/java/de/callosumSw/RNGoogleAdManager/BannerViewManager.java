@@ -42,6 +42,7 @@ class BannerView extends ReactViewGroup {
     public static final String AD_FAILED = "AD_FAILED";
     public static final String AD_LOADED = "AD_LOADED";
     public static final String AD_REQUEST = "AD_REQUEST";
+    public static final String NATIVE_ERROR = "NATIVE_ERROR";
     public static final String PROPS_SET = "PROPS_SET";
 
     public static final String BANNER = "BANNER";
@@ -67,15 +68,36 @@ class BannerView extends ReactViewGroup {
         super(context);
     }
 
-    private void sendIfPropsSet(){
-        if(adId != null && (adSizes != null || adType != null)){
-            WritableMap event = Arguments.createMap();
-
+    public void sendEvent(String type, @Nullable WritableMap event) {
+        try {
             ReactContext reactContext = (ReactContext)getContext();
             reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(
                     getId(),
-                    PROPS_SET,
-                    event);
+                    type,
+                    event
+            );
+        } catch (Exception err) {
+            Log.d(LOG_TAG, Log.getStackTraceString(err));
+        }
+    }
+
+    public void logAndSendError(Exception e){
+        try {
+            Log.d(LOG_TAG, Log.getStackTraceString(e));
+            String errorMessage = e.getMessage();
+
+            WritableMap event = Arguments.createMap();
+            event.putString("errorMessage", errorMessage);
+
+            sendEvent(NATIVE_ERROR, event);
+        } catch (Exception err) {
+            Log.d(LOG_TAG, Log.getStackTraceString(err));
+        }
+    }
+
+    private void sendIfPropsSet(){
+        if(adId != null && (adSizes != null || adType != null)){
+            sendEvent(PROPS_SET, null);
         }
     }
 
@@ -83,7 +105,7 @@ class BannerView extends ReactViewGroup {
         try {
             this.addView(this.adView);
         } catch (Exception e) {
-            Log.d(LOG_TAG, Log.getStackTraceString(e));
+            logAndSendError(e);
         }
     }
 
@@ -123,7 +145,7 @@ class BannerView extends ReactViewGroup {
                 this.adView.setAdSizes(sizes);
             }
         } catch (Exception e) {
-            Log.d(LOG_TAG, Log.getStackTraceString(e));
+            logAndSendError(e);
         }
     }
 
@@ -133,7 +155,7 @@ class BannerView extends ReactViewGroup {
                 this.adView.destroy();
             }
         } catch (Exception e) {
-            Log.d(LOG_TAG, Log.getStackTraceString(e));
+            logAndSendError(e);
         }
     }
 
@@ -141,7 +163,7 @@ class BannerView extends ReactViewGroup {
         try {
             this.removeView(this.adView);
         } catch (Exception e) {
-            Log.d(LOG_TAG, "Ad clicked");
+            logAndSendError(e);
         }
     }
 
@@ -170,11 +192,7 @@ class BannerView extends ReactViewGroup {
                     WritableMap event = Arguments.createMap();
                     event.putString("url", info);
 
-                    ReactContext reactContext = (ReactContext)getContext();
-                    reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(
-                            getId(),
-                            AD_CLICKED,
-                            event);
+                    BannerView.this.sendEvent(AD_CLICKED, event);
 
                     break;
                 }
@@ -184,12 +202,7 @@ class BannerView extends ReactViewGroup {
 
                     destroyAdView();
 
-                    ReactContext reactContext = (ReactContext)getContext();
-                    reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(
-                            getId(),
-                            AD_CLOSED,
-                            null);
-
+                    BannerView.this.sendEvent(AD_CLOSED, null);
                     break;
                 }
             }
@@ -201,11 +214,7 @@ class BannerView extends ReactViewGroup {
         event.putInt("width", width);
         event.putInt("height", height);
 
-        ReactContext reactContext = (ReactContext)getContext();
-        reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(
-                getId(),
-                AD_LOADED,
-                event);
+        sendEvent(AD_LOADED, event);
     }
 
     private void handleLoad(String adServer) {
@@ -225,7 +234,7 @@ class BannerView extends ReactViewGroup {
 
             sendLoadEvent(adWidth, adHeight);
         } catch (Exception e) {
-            Log.d(LOG_TAG, Log.getStackTraceString(e));
+            logAndSendError(e);
         }
     }
 
@@ -254,7 +263,7 @@ class BannerView extends ReactViewGroup {
                         handleLoad("GAM");
                     }
                 } catch (Exception e) {
-                    Log.d(LOG_TAG, Log.getStackTraceString(e));
+                    BannerView.this.logAndSendError(e);
                 }
             }
 
@@ -267,13 +276,10 @@ class BannerView extends ReactViewGroup {
 
                     WritableMap event = Arguments.createMap();
                     event.putString("errorMessage", errorMessage);
-                    ReactContext reactContext = (ReactContext)getContext();
-                    reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(
-                        getId(),
-                        AD_FAILED,
-                        event);
+
+                    BannerView.this.sendEvent(AD_FAILED, event);
                 } catch (Exception e) {
-                    Log.d(LOG_TAG, Log.getStackTraceString(e));
+                    BannerView.this.logAndSendError(e);
                 }
             }
         });
@@ -319,11 +325,9 @@ class BannerView extends ReactViewGroup {
                 Log.d(LOG_TAG, "GAM Banner request with adunit id " + adUnitId + " with size " + adSize);
                 this.adView.loadAd(adRequest);
             }
-
-            ReactContext reactContext = (ReactContext)getContext();
-            reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(getId(), AD_REQUEST, event);
+            sendEvent(AD_REQUEST, event);
         } catch (Exception e) {
-            Log.d(LOG_TAG, Log.getStackTraceString(e));
+            logAndSendError(e);
         }
     }
 
@@ -335,7 +339,7 @@ class BannerView extends ReactViewGroup {
             }
             this.addAdView();
         } catch (Exception e) {
-            Log.d(LOG_TAG, Log.getStackTraceString(e));
+            logAndSendError(e);
         }
     }
 
@@ -345,7 +349,7 @@ class BannerView extends ReactViewGroup {
                 this.destroyAdView();
             }
         } catch (Exception e) {
-            Log.d(LOG_TAG, Log.getStackTraceString(e));
+            logAndSendError(e);
         }
     }
 
@@ -366,7 +370,7 @@ class BannerView extends ReactViewGroup {
 
             this.loadAd();
         } catch (Exception e) {
-            Log.d(LOG_TAG, Log.getStackTraceString(e));
+            logAndSendError(e);
         }
     }
 
@@ -376,7 +380,7 @@ class BannerView extends ReactViewGroup {
                 this.removeAdView();
             }
         } catch (Exception e) {
-            Log.d(LOG_TAG, Log.getStackTraceString(e));
+            logAndSendError(e);
         }
     }
 
@@ -385,7 +389,7 @@ class BannerView extends ReactViewGroup {
             ReactContext reactContext = (ReactContext)getContext();
             MobileAds.openDebugMenu(reactContext.getCurrentActivity(), adId);
         } catch (Exception e) {
-            Log.d(LOG_TAG, Log.getStackTraceString(e));
+            logAndSendError(e);
         }
     }
 
@@ -403,7 +407,7 @@ class BannerView extends ReactViewGroup {
             }
             sendIfPropsSet();
         } catch (Exception e) {
-            Log.d(LOG_TAG, Log.getStackTraceString(e));
+            logAndSendError(e);
         }
     }
 }
@@ -458,6 +462,10 @@ public class BannerViewManager extends ViewGroupManager<BannerView> {
                         MapBuilder.of(
                                 "phasedRegistrationNames",
                                 MapBuilder.of("bubbled", "onAdRequest")))
+                .put(BannerView.NATIVE_ERROR,
+                        MapBuilder.of(
+                                "phasedRegistrationNames",
+                                MapBuilder.of("bubbled", "onNativeError")))
                 .put(BannerView.PROPS_SET,
                         MapBuilder.of(
                                 "phasedRegistrationNames",
