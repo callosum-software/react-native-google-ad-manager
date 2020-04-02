@@ -152,6 +152,7 @@ class RNGAMBanner extends React.PureComponent {
         adId={this.props.adId}
         adSizes={this.props.adSizes}
         adType={this.props.adType}
+        fluid={this.props.fluid}
         onAdClicked={this._onAdClicked}
         onAdClosed={this._onAdClosed}
         onAdFailedToLoad={this._onAdFailedToLoad}
@@ -173,6 +174,7 @@ RNGAMBanner.propTypes = {
   adId: P.string.isRequired,
   adSizes: P.arrayOf(P.arrayOf(P.number)),
   adType: P.string,
+  fluid: P.bool,
   onAdClicked: P.func,
   onAdClosed: P.func,
   onAdFailedToLoad: P.func,
@@ -189,6 +191,7 @@ RNGAMBanner.propTypes = {
 RNGAMBanner.defaultProps = {
   adSizes: undefined,
   adType: undefined,
+  fluid: false,
   onAdClicked: noop,
   onAdClosed: noop,
   onAdFailedToLoad: noop,

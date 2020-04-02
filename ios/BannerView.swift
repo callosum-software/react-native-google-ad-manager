@@ -14,6 +14,7 @@ class BannerView: UIView, GADAppEventDelegate, GADBannerViewDelegate, GADAdSizeD
     var width: Int?, height: Int? = nil
 
     var isAdUnitSet: Bool = false
+    var isFluid: Bool = true
 
     @objc var onAdClicked: RCTDirectEventBlock?
     @objc var onAdClosed: RCTDirectEventBlock?
@@ -44,6 +45,13 @@ class BannerView: UIView, GADAppEventDelegate, GADBannerViewDelegate, GADAdSizeD
     @objc var targeting: NSDictionary? = [:]
     @objc var testDeviceIds: Array<String>? = [""]
 
+    @objc var fluid: Bool = false {
+        didSet {
+            sendIfPropsSet()
+            isFluid = fluid
+        }
+    }
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
     }
@@ -69,25 +77,33 @@ class BannerView: UIView, GADAppEventDelegate, GADBannerViewDelegate, GADAdSizeD
     }
 
     func createAdView(){
-        bannerView = DFPBannerView.init()
-
+        if(isFluid){
+            bannerView = DFPBannerView(adSize: kGADAdSizeFluid)
+        }
+        else{
+            bannerView = DFPBannerView.init()
+        }
+        
         let rootViewController = UIApplication.shared.delegate?.window??.rootViewController
-
+        
         var validAdSizes = [NSValue]()
-
-        let adSizesArray = adSizes ?? []
-
-        for sizes in adSizesArray {
+        
+        for sizes in adSizes! {
             let width = sizes[0]
             let height = sizes[1]
             let customGADAdSize = GADAdSizeFromCGSize(CGSize(width: width, height: height))
             validAdSizes.append(NSValueFromGADAdSize(customGADAdSize))
         }
 
+        if(isFluid){
+            validAdSizes.append(NSValueFromGADAdSize(kGADAdSizeFluid))
+        } else{
+            bannerView?.translatesAutoresizingMaskIntoConstraints = false
+        }
+        
         bannerView?.rootViewController = rootViewController
         bannerView?.delegate = self
         bannerView?.adSizeDelegate = self
-        bannerView?.translatesAutoresizingMaskIntoConstraints = false
         bannerView?.appEventDelegate = self
         bannerView?.validAdSizes = validAdSizes
     }
@@ -136,12 +152,18 @@ class BannerView: UIView, GADAppEventDelegate, GADBannerViewDelegate, GADAdSizeD
 
     func adView(_ bannerView: GADBannerView, willChangeAdSizeTo size: GADAdSize) {
         print("\(LOG_TAG): Ad size changed")
-        if let adSize = adSizes?.first(where: {
-            let customGADAdSize = GADAdSizeFromCGSize(CGSize(width: $0[0], height: $0[1]))
-            return GADAdSizeEqualToSize(customGADAdSize, size)
-        }) {
-            width = adSize[0]
-            height = adSize[1]
+        if(isFluid){
+            width = Int(size.size.width)
+            height = Int(size.size.height)
+        }
+        else{
+            if let adSize = adSizes?.first(where: {
+                let customGADAdSize = GADAdSizeFromCGSize(CGSize(width: $0[0], height: $0[1]))
+                return GADAdSizeEqualToSize(customGADAdSize, size)
+            }) {
+                width = adSize[0]
+                height = adSize[1]
+            }
         }
     }
 
