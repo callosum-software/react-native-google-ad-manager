@@ -1,5 +1,5 @@
 {
-  "name": "@callosum/react-native-google-ad-manager",
+  "name": "@axioscode/react-native-google-ad-manager",
   "version": "2.1.0-rc.7",
   "description": "Google Ad Manager for react-native",
   "main": "index.js",
@@ -50,10 +50,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@gitlab.com/cmsw/react-native-google-ad-manager.git"
+    "url": "https://github.com/axioscode/react-native-google-ad-manager"
   },
   "bugs": {
-    "url": "https://gitlab.com/cmsw/react-native-google-ad-manager/issues"
+    "url": "https://github.com/axioscode/react-native-google-ad-manager/issues"
   },
-  "homepage": "https://gitlab.com/cmsw/react-native-google-ad-manager#readme"
+  "homepage": "https://github.com/axioscode/react-native-google-ad-manager#readme",
+  "directories": {
+    "example": "example"
+  }
 }
